@@ -5853,7 +5853,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('mdz_ipa_mdz',zoo(2)%ipa_mdz, 0.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_lgz',zoo(2)%ipa_lgz, 0.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_smt',zoo(2)%ipa_smt, 1.0)          ! dimensionless
-    call g_tracer_add_param('mdz_ipa_lgt',zoo(2)%ipa_lgt, 0.25)         ! dimensionless
+    call g_tracer_add_param('mdz_ipa_lgt',zoo(2)%ipa_lgt, 0.5)         ! dimensionless
     call g_tracer_add_param('mdz_ipa_bact',zoo(2)%ipa_bact, 0.0)        ! dimensionless
     call g_tracer_add_param('mdz_ipa_det',zoo(2)%ipa_det, 0.0)          ! dimensionless
     ! innate prey availability for large predatory zooplankton/krill
@@ -5920,14 +5920,14 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('kae_smz',zoo(1)%kae, 1.0e+10)                     ! moles N kg-1
     call g_tracer_add_param('kae_mdz',zoo(2)%kae, 1.0e+10)                     ! moles N kg-1
     call g_tracer_add_param('kae_lgz',zoo(3)%kae, 1.0e+10)                     ! moles N kg-1
-    call g_tracer_add_param('kae_smz',zoo(4)%kae, 1.0e-3)                      ! moles N kg-1
-    call g_tracer_add_param('kae_lgz',zoo(5)%kae, 1.0e-3)                      ! moles N kg-1
+    call g_tracer_add_param('kae_smz',zoo(4)%kae, 1.0e-4)                      ! moles N kg-1
+    call g_tracer_add_param('kae_lgz',zoo(5)%kae, 1.0e-5)                      ! moles N kg-1
 
     call g_tracer_add_param('agg_smz',zoo(1)%agg, 0.0)                         ! s-1 (moles N kg)-1
     call g_tracer_add_param('agg_mdz',zoo(2)%agg, 0.0)                         ! s-1 (moles N kg)-1
     call g_tracer_add_param('agg_lgz',zoo(3)%agg, 0.0)                         ! s-1 (moles N kg)-1
     call g_tracer_add_param('agg_smz',zoo(4)%agg, 0.0)                         ! s-1 (moles N kg)-1
-    call g_tracer_add_param('agg_lgz',zoo(5)%agg, 0.03/sperd)                  ! s-1 (moles N kg)-1
+    call g_tracer_add_param('agg_lgz',zoo(5)%agg, 0.05/sperd)                  ! s-1 (moles N kg)-1
     !
     !----------------------------------------------------------------------
     ! Partitioning of zooplankton ingestion to other compartments
@@ -8088,8 +8088,8 @@ write (stdlogunit, generic_COBALT_nml)
          ! Add production of detritus from zooplankton (large tunicates) aggregation (salp-falls)
          !
          n = 5
-         zoo(n)%jprod_ndet(i,j,k) + zoo(n)%jprod_ndet(i,j,k) + zoo(n)%jaggloss_n(i,j,k)
-         zoo(n)%jprod_pdet(i,j,k) + zoo(n)%jprod_pdet(i,j,k) + zoo(n)%jaggloss_p(i,j,k)
+         zoo(n)%jprod_ndet(i,j,k) = zoo(n)%jprod_ndet(i,j,k) + zoo(n)%jaggloss_n(i,j,k)
+         zoo(n)%jprod_pdet(i,j,k) = zoo(n)%jprod_pdet(i,j,k) + zoo(n)%jaggloss_p(i,j,k)
 
 
          do m = 1, NUM_ZOO
