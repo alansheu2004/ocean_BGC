@@ -431,7 +431,8 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           jprod_nh4,        & ! ammonia production by zooplankton
           jprod_n,          & ! zooplankton production
           o2lim,            & ! oxygen limitation of zooplankton activity
-          temp_lim            ! Temperature limitation
+          temp_lim,         & ! Temperature limitation
+          cold_lim            ! Temperature limitation due to cold temperatures
     integer ::		    &
           id_jzloss_n       = -1, &
           id_jzloss_p       = -1, &
@@ -458,6 +459,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_jprod_n        = -1, &
           id_o2lim          = -1, &
           id_temp_lim       = -1, &
+          id_cold_lim       = -1, &
           id_jprod_n_100    = -1, &
           id_jingest_n_100  = -1, &
           id_jzloss_n_100   = -1, &
@@ -2601,6 +2603,10 @@ write (stdlogunit, generic_COBALT_nml)
 
     vardesc_temp = vardesc("temp_lim_Lgt","Temperature limitation of large tunicates",'h','L','s','dimensionless','f')
     zoo(5)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("cold_lim_Lgt","Cold temperature limitation of large tunicates",'h','L','s','dimensionless','f')
+    zoo(5)%id_cold_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("AE_smt","Assimilation efficiency of small tunicates",'h','L','s','dimensionless','f')
@@ -6912,6 +6918,7 @@ write (stdlogunit, generic_COBALT_nml)
     real,dimension(1:NUM_PREY) :: prey_vec,prey_p2n_vec,prey_fe2n_vec,prey_si2n_vec
     real,dimension(1:NUM_ZOO)  :: tot_prey
     real :: tot_prey_hp, sw_fac_denom, basal_respiration, lim_nut_n_ingestion
+    real :: min_cold_lim_temp, cold_lim_max_value, cold_lim_ktemp
     real :: bact_uptake_ratio, vmax_bact, growth_ratio
     real :: fpoc_btm, log_fpoc_btm
     real :: fe_salt
@@ -7584,6 +7591,13 @@ write (stdlogunit, generic_COBALT_nml)
        cobalt%hp_o2lim(i,j,k) = max((cobalt%f_o2(i,j,k) - cobalt%o2_min),0.0)/ &
                                 (cobalt%k_o2 + max(cobalt%f_o2(i,j,k)-cobalt%o2_min,0.0))
 
+       ! cold temperature limitation for Salps
+       cold_lim_max_value = 1.0
+       min_cold_lim_temp = -2.0
+       cold_lim_ktemp = 2.2
+       zoo(5)%cold_lim(i,j,k) = cold_lim_max_value * ((Temp(i,j,k) - min_cold_lim_temp)**2.0 / &
+                                ((Temp(i,j,k) - min_cold_lim_temp)**2.0 + cold_lim_ktemp**2.0))
+
        ! Prey vectors for ingestion and loss calculations
        ! (note: ordering of phytoplankton must be consistent with
        !  DIAZO, LARGE, SMALL ordering inherited from TOPAZ)
@@ -7813,15 +7827,20 @@ write (stdlogunit, generic_COBALT_nml)
        tot_prey(m) = pa_matrix(m,1)*prey_vec(1) + pa_matrix(m,2)*prey_vec(2) + &
                      pa_matrix(m,3)*prey_vec(3) + pa_matrix(m,4)*prey_vec(4) + &
                      pa_matrix(m,5)*prey_vec(5)
-       ingest_matrix(m,1) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+       ingest_matrix(m,1) = zoo(m)%temp_lim(i,j,k)*zoo(m)%cold_lim(i,j,k)* &
+                     zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,1)*prey_vec(1)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
-       ingest_matrix(m,2) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+       ingest_matrix(m,2) = zoo(m)%temp_lim(i,j,k)*zoo(m)%cold_lim(i,j,k)* &
+                     zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,2)*prey_vec(2)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
-       ingest_matrix(m,3) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+       ingest_matrix(m,3) = zoo(m)%temp_lim(i,j,k)*zoo(m)%cold_lim(i,j,k)* &
+                     zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,3)*prey_vec(3)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
-       ingest_matrix(m,4) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+       ingest_matrix(m,4) = zoo(m)%temp_lim(i,j,k)*zoo(m)%cold_lim(i,j,k)* &
+                     zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,4)*prey_vec(4)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
-       ingest_matrix(m,5) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+       ingest_matrix(m,5) = zoo(m)%temp_lim(i,j,k)*zoo(m)%cold_lim(i,j,k)* &
+                     zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,5)*prey_vec(5)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
        zoo(m)%jingest_n(i,j,k) = ingest_matrix(m,1) + ingest_matrix(m,2) + &
                                  ingest_matrix(m,3) + ingest_matrix(m,4) + &
@@ -10172,6 +10191,10 @@ write (stdlogunit, generic_COBALT_nml)
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
        if (zoo(n)%id_temp_lim .gt. 0)          &
             used = g_send_data(zoo(n)%id_temp_lim, zoo(n)%temp_lim,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (zoo(n)%id_cold_lim .gt. 0)          &
+            used = g_send_data(zoo(n)%id_cold_lim, zoo(n)%cold_lim,           &
             model_time, rmask = grid_tmask,&
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
        if (zoo(n)%id_assim_eff .gt. 0)          &
@@ -12968,6 +12991,7 @@ write (stdlogunit, generic_COBALT_nml)
        allocate(zoo(n)%jprod_n(isd:ied,jsd:jed,nk))      ; zoo(n)%jprod_n         = 0.0
        allocate(zoo(n)%o2lim(isd:ied,jsd:jed,nk))        ; zoo(n)%o2lim           = 0.0
        allocate(zoo(n)%temp_lim(isd:ied,jsd:jed,nk))      ; zoo(n)%temp_lim       = 0.0
+       allocate(zoo(n)%cold_lim(isd:ied,jsd:jed,nk))      ; zoo(n)%cold_lim       = 0.0
     enddo
 
     ! higher predator ingestion
@@ -13446,6 +13470,7 @@ write (stdlogunit, generic_COBALT_nml)
        deallocate(zoo(n)%jprod_n)
        deallocate(zoo(n)%o2lim)
        deallocate(zoo(n)%temp_lim)
+       deallocate(zoo(n)%cold_lim)
     enddo
 
     deallocate(cobalt%f_alk)
