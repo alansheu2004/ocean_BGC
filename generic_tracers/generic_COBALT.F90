@@ -389,8 +389,10 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           ipa_lgp,          & ! innate prey availability of large phytoplankton
           ipa_diaz,         & ! innate prey availability of diazotrophs 
           ipa_smz,          & ! innate prey availability of small zooplankton
-          ipa_mdz,          & ! innate prey availability of large zooplankton
-          ipa_lgz,          & ! innate prey availability of x-large zooplankton
+          ipa_mdz,          & ! innate prey availability of medium zooplankton
+          ipa_lgz,          & ! innate prey availability of large zooplankton
+          ipa_vmmdz,        & ! innate prey availability of vertically migrating medium zooplankton
+          ipa_vmlgz,        & ! innate prey availability of vertically migrating large zooplankton
           ipa_det,          & ! innate prey availability of detritus
           ipa_bact            ! innate prey availability for bacteria
     real, ALLOCATABLE, dimension(:,:)  :: &
@@ -548,12 +550,12 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
   type(phytoplankton), dimension(NUM_PHYTO) :: phyto
 
   ! define three zooplankton types
-  integer, parameter :: NUM_ZOO = 3
+  integer, parameter :: NUM_ZOO = 5
   type(zooplankton), dimension(NUM_ZOO) :: zoo
 
   type(bacteria), dimension(1) :: bact
 
-  integer, parameter :: NUM_PREY = 8
+  integer, parameter :: NUM_PREY = 10
 
   type generic_COBALT_type
 
@@ -664,6 +666,8 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           hp_ipa_smz,       & ! "  "  "  "  "  "  "  "  "   small zooplankton to hp's
           hp_ipa_mdz,       & ! "  "  "  "  "  "  "  "  "   medium zooplankton to hp's
           hp_ipa_lgz,       & ! "  "  "  "  "  "  "  "  "   large zooplankton to hp's
+          hp_ipa_vmmdz,     & ! "  "  "  "  "  "  "  "  "  vertically migrating medium zooplankton to hp's
+          hp_ipa_vmlgz,     & ! "  "  "  "  "  "  "  "  "  vertically migrating large zooplankton to hp's
           hp_ipa_det,       & ! "  "  "  "  "  "  "  "  "   detritus to hp's
           hp_phi_det          ! fraction of ingested N to detritus
           
@@ -992,7 +996,9 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           p_sio4,&
           p_nsmz,&
           p_nmdz,&
-          p_nlgz
+          p_nlgz,&
+		  p_nvmmdz,&
+		  p_nvmlgz
 
       real, dimension (:,:), allocatable :: &
           runoff_flux_alk,&
@@ -2060,6 +2066,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jzloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jzloss_n_vmMdz","Vertically migrating medium zooplankton nitrogen loss to zooplankton layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jzloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)	
+
+    vardesc_temp = vardesc("jzloss_n_vmLgz","Vertically migrating large zooplankton nitrogen loss to zooplankton layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jzloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)	
+
     !
     ! Register diagnostics for zooplankton loss terms: higher predators
     !
@@ -2079,6 +2095,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jhploss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jhploss_n_vmMdz","Vertically migrating medium zooplankton nitrogen loss to higher predators layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jhploss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jhploss_n_vmLgz","Vertically migrating large zooplankton nitrogen loss to higher predators layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jhploss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     !
     ! Register zooplankton ingestion rates
     !
@@ -2098,6 +2124,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jingest_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jingest_n_vmMdz","Ingestion of nitrogen by vertically migrating medium zooplankton, layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jingest_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jingest_n_vmLgz","Ingestion of nitrogen by vertically migrating large zooplankton, layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jingest_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jingest_p_Smz","Ingestion of phosphorous by small zooplankton, layer integral", &
                            'h','L','s','mol P m-2 s-1','f')
     zoo(1)%id_jingest_p = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -2113,6 +2149,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jingest_p = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jingest_p_vmMdz","Ingestion of phosphorous by vertically migrating medium zooplankton, layer integral",&
+                           'h','L','s','mol P m-2 s-1','f')
+    zoo(4)%id_jingest_p = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jingest_p_vmLgz","Ingestion of phosphorous by vertically migrating large zooplankton, layer integral",&
+                           'h','L','s','mol P m-2 s-1','f')
+    zoo(5)%id_jingest_p = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jingest_sio2_Smz","Ingestion of sio2 by small zooplankton, layer integral",&
                            'h','L','s','mol SiO2 m-2 s-1','f')
     zoo(1)%id_jingest_sio2 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -2128,6 +2174,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jingest_sio2 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jingest_sio2_vmMdz","Ingestion of sio2 by vertically migrating medium zooplankton, layer integral",&
+                           'h','L','s','mol SiO2 m-2 s-1','f')
+    zoo(4)%id_jingest_sio2 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jingest_sio2_vmLgz","Ingestion of sio2 by vertically migrating large zooplankton, layer integral",&
+                           'h','L','s','mol SiO2 m-2 s-1','f')
+    zoo(5)%id_jingest_sio2 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jingest_fe_Smz","Ingestion of Fe by small zooplankton, layer integral",&
                    'h','L','s','mol Fe m-2 s-1','f')
     zoo(1)%id_jingest_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -2143,6 +2199,17 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jingest_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jingest_fe_vmMdz","Ingestion of Fe by vertically migrating medium zooplankton, layer integral",&
+                           'h','L','s','mol Fe m-2 s-1','f')
+    zoo(4)%id_jingest_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jingest_fe_vmLgz","Ingestion of Fe by vertically migrating large zooplankton, layer integral",&
+                           'h','L','s','mol Fe m-2 s-1','f')
+    zoo(5)%id_jingest_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+	
+		 
     !
     ! Register detrital production terms for zooplankton
     !
@@ -2162,6 +2229,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_ndet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_ndet_vmMdz","Production of nitrogen detritus by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jprod_ndet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+	
+    vardesc_temp = vardesc("jprod_ndet_vmLgz","Production of nitrogen detritus by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jprod_ndet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jprod_pdet_Smz","Production of phosphorous detritus by small zooplankton, layer integral",&
                    'h','L','s','mol P m-2 s-1','f')
     zoo(1)%id_jprod_pdet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -2177,6 +2254,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_pdet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_pdet_vmMdz","Production of phosphorous detritus by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(4)%id_jprod_pdet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_pdet_vmLgz","Production of phosphorous detritus by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(5)%id_jprod_pdet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jprod_sidet_Smz","Production of opal detritus by small zooplankton, layer integral",&
                    'h','L','s','mol SiO2 m-2 s-1','f')
     zoo(1)%id_jprod_sidet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -2192,21 +2279,41 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_sidet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_sio4_Smz","Production of sio4 through grazing/dissolution, layer integral",&
+    vardesc_temp = vardesc("jprod_sidet_vmMdz","Production of opal detritus by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol SiO2 m-2 s-1','f')
+    zoo(4)%id_jprod_sidet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		
+    vardesc_temp = vardesc("jprod_sidet_vmLgz","Production of opal detritus by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol SiO2 m-2 s-1','f')
+    zoo(5)%id_jprod_sidet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_sio4_Smz","Production of sio4 by small zooplankton through grazing/dissolution, layer integral",&
                    'h','L','s','mol SiO4 m-2 s-1','f')
     zoo(1)%id_jprod_sio4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_sio4_Mdz","Production of sio4 through grazing/dissolution, layer integral",&
+    vardesc_temp = vardesc("jprod_sio4_Mdz","Production of sio4 by medium zooplankton through grazing/dissolution, layer integral",&
                    'h','L','s','mol SiO4 m-2 s-1','f')
     zoo(2)%id_jprod_sio4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_sio4_Lgz","Production of sio4 through grazing/dissolution, layer integral",&
+    vardesc_temp = vardesc("jprod_sio4_Lgz","Production of sio4 by large zooplankton through grazing/dissolution, layer integral",&
                    'h','L','s','mol SiO4 m-2 s-1','f')
     zoo(3)%id_jprod_sio4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_sio4_vmMdz","Production of sio4 by vertically migrating medium zooplankton through grazing/dissolution, layer integral",&
+                   'h','L','s','mol SiO4 m-2 s-1','f')
+    zoo(4)%id_jprod_sio4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_sio4_vmLgz","Production of sio4 by vertically migrating large zooplankton through grazing/dissolution, layer integral",&
+                   'h','L','s','mol SiO4 m-2 s-1','f')
+    zoo(5)%id_jprod_sio4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jprod_fedet_Smz","Production of iron detritus by small zooplankton, layer integral",&
                    'h','L','s','mol Fe m-2 s-1','f')
     zoo(1)%id_jprod_fedet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -2222,6 +2329,15 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_fedet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_fedet_vmMdz","Production of iron detritus by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    zoo(4)%id_jprod_fedet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_fedet_vmLgz","Production of iron detritus by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    zoo(5)%id_jprod_fedet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
     !
     ! Register dissolved organic/inorganic production terms for zooplankton
     !
@@ -2241,6 +2357,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_ldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_ldon_vmMdz","Production of labile dissolved organic nitrogen by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jprod_ldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_ldon_vmLgz","Production of labile dissolved organic nitrogen by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jprod_ldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     ! Labile dissolved organic phosphorous
     vardesc_temp = vardesc("jprod_ldop_Smz","Production of labile dissolved organic phosphorous by small zooplankton, layer integral",&
                    'h','L','s','mol P m-2 s-1','f')
@@ -2257,6 +2383,17 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_ldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_ldop_vmMdz","Production of labile dissolved organic phosphorous by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(4)%id_jprod_ldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_ldop_vmLgz","Production of labile dissolved organic phosphorous by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(5)%id_jprod_ldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+		 
     ! Refractory dissolved organic nitrogen
     vardesc_temp = vardesc("jprod_srdon_Smz","Production of semi-refractory dissolved organic nitrogen by small zooplankton, layer integral",&
                    'h','L','s','mol N m-2 s-1','f')
@@ -2273,6 +2410,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_srdon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_srdon_vmMdz","Production of semi-refractory dissolved organic nitrogen by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jprod_srdon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_srdon_vmLgz","Production of semi-refractory dissolved organic nitrogen by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jprod_srdon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     ! Labile dissolved organic phosphorous
     vardesc_temp = vardesc("jprod_srdop_Smz","Production of semi-refractory dissolved organic phosphorous by small zooplankton, layer integral",&
                    'h','L','s','mol P m-2 s-1','f')
@@ -2289,6 +2436,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_srdop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_srdop_vmMdz","Production of semi-refractory dissolved organic phosphorous by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(4)%id_jprod_srdop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_srdop_vmLgz","Production of semi-refractory dissolved organic phosphorous by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(5)%id_jprod_srdop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     ! semi-labile dissolved organic nitrogen 
     vardesc_temp = vardesc("jprod_sldon_Smz","Production of semi-labile dissolved organic nitrogen by small zooplankton, layer integral",&
                    'h','L','s','mol N m-2 s-1','f')
@@ -2304,7 +2461,17 @@ write (stdlogunit, generic_COBALT_nml)
                    'h','L','s','mol N m-2 s-1','f')
     zoo(3)%id_jprod_sldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_sldon_vmMdz","Production of semi-labile dissolved organic nitrogen by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jprod_sldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_sldon_vmLgz","Production of semi-labile dissolved organic nitrogen by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jprod_sldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     ! semi-labile dissolved organic phosphorous
     vardesc_temp = vardesc("jprod_sldop_Smz","Production of semi-labile dissolved organic phosphorous by small zooplankton, layer integral",&
                    'h','L','s','mol P m-2 s-1','f')
@@ -2319,6 +2486,16 @@ write (stdlogunit, generic_COBALT_nml)
     vardesc_temp = vardesc("jprod_sldop_Lgz","Production of semi-labile dissolved organic phosphorous by large zooplankton, layer integral",&
                    'h','L','s','mol P m-2 s-1','f')
     zoo(3)%id_jprod_sldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_sldop_vmMdz","Production of semi-labile dissolved organic phosphorous by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(4)%id_jprod_sldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_sldop_vmLgz","Production of semi-labile dissolved organic phosphorous by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    zoo(5)%id_jprod_sldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     ! dissolved iron
@@ -2337,6 +2514,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_fed = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_fed_vmMdz","Production of dissolved iron by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    zoo(4)%id_jprod_fed = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_fed_vmLgz","Production of dissolved iron by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    zoo(5)%id_jprod_fed = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+	
     ! phosphate
     vardesc_temp = vardesc("jprod_po4_Smz","Production of phosphate by small zooplankton, layer integral",&
                    'h','L','s','mol PO4 m-2 s-1','f')
@@ -2353,6 +2540,16 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_po4_vmMdz","Production of phosphate by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol PO4 m-2 s-1','f')
+    zoo(4)%id_jprod_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_po4_vmLgz","Production of phosphate by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol PO4 m-2 s-1','f')
+    zoo(5)%id_jprod_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     ! ammonia
     vardesc_temp = vardesc("jprod_nh4_Smz","Production of ammonia by small zooplankton, layer integral",&
                    'h','L','s','mol NH4 m-2 s-1','f')
@@ -2369,25 +2566,44 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_nh4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_nh4_vmMdz","Production of ammonia by vertically migrating medium zooplankton, layer integral",&
+                   'h','L','s','mol NH4 m-2 s-1','f')
+    zoo(4)%id_jprod_nh4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_nh4_vmLgz","Production of ammonia by vertically migrating large zooplankton, layer integral",&
+                   'h','L','s','mol NH4 m-2 s-1','f')
+    zoo(5)%id_jprod_nh4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
     !
     ! Register zooplankton production terms 
     !
 
-    vardesc_temp = vardesc("jprod_nsmz","Production of new biomass (nitrogen) by small zooplankton, layer integral",&
+    vardesc_temp = vardesc("jprod_nSmz","Production of new biomass (nitrogen) by small zooplankton, layer integral",&
                            'h','L','s','mol N m-2 s-1','f')
     zoo(1)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_nmdz","Production of new biomass (nitrogen) by medium-sized zooplankton, layer integral",&
+    vardesc_temp = vardesc("jprod_nMdz","Production of new biomass (nitrogen) by medium-sized zooplankton, layer integral",&
                            'h','L','s','mol N m-2 s-1','f')
     zoo(2)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_nlgz","Production of new biomass (nitrogen) by large zooplankton, layer integral",&
+    vardesc_temp = vardesc("jprod_nLgz","Production of new biomass (nitrogen) by large zooplankton, layer integral",&
                            'h','L','s','mol N m-2 s-1','f')
     zoo(3)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_nvmMdz","Production of new biomass (nitrogen) by vertically migrating medium zooplankton, layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(4)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_nvmLgz","Production of new biomass (nitrogen) by vertically migrating large zooplankton, layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    zoo(5)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("o2lim_Smz","Oxygen limitation of small zooplankton",'h','L','s','dimensionless','f')
     zoo(1)%id_o2lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -2400,6 +2616,14 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_o2lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("o2lim_vmMdz","Oxygen limitation of vertically migrating medium zooplankton",'h','L','s','dimensionless','f')
+    zoo(4)%id_o2lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("o2lim_vmLgz","Oxygen limitation of vertically migrating large zooplankton",'h','L','s','dimensionless','f')
+    zoo(5)%id_o2lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("temp_lim_Smz","Temperature limitation of small zooplankton",'h','L','s','dimensionless','f')
     zoo(1)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -2412,6 +2636,13 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("temp_lim_vmMdz","Temperature limitation of vertically migrating medium zooplankton",'h','L','s','dimensionless','f')
+    zoo(4)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("temp_lim_vmLgz","Temperature limitation of vertically migrating large zooplankton",'h','L','s','dimensionless','f')
+    zoo(4)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
     !
     ! Register bacterial diagnostics, starting with losses of bacteria to ingestion by zooplankton
     ! CAS: limit loss terms to N
@@ -3411,6 +3642,14 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jprod_nvmmdz_100","Vertically migrating medium zooplankton nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(4)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_nvmlgz_100","Vertically migrating large zooplankton nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(5)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jingest_n_nsmz_100","Small zooplankton nitrogen ingestion integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     zoo(1)%id_jingest_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -3423,6 +3662,14 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jingest_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jingest_n_nvmmdz_100","Vertically migrating medium zooplankton nitrogen ingestion integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(4)%id_jingest_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jingest_n_nvmlgz_100","Vertically migrating large zooplankton nitrogen ingestion integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(5)%id_jingest_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jzloss_nsmz_100","Small zooplankton nitrogen loss to zooplankton integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     zoo(1)%id_jzloss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -3438,15 +3685,31 @@ write (stdlogunit, generic_COBALT_nml)
     vardesc_temp = vardesc("jhploss_nlgz_100","Large zooplankton nitrogen loss to higher preds. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     zoo(3)%id_jhploss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jhploss_nvmmdz_100","Vertically migrating medium zooplankton nitrogen loss to higher preds. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(4)%id_jhploss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_ndet_nmdz_100","Medium zooplankton nitrogen detritus prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    vardesc_temp = vardesc("jhploss_nvmlgz_100","Vertically migrating large zooplankton nitrogen loss to higher preds. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(5)%id_jhploss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+	
+		 vardesc_temp = vardesc("jprod_ndet_nmdz_100","Medium zooplankton nitrogen detritus prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     zoo(2)%id_jprod_ndet_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("jprod_ndet_nlgz_100","Large zooplankton nitrogen detritus prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     zoo(3)%id_jprod_ndet_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jprod_ndet_nvmmdz_100","Vertically migrating medium zooplankton nitrogen detritus prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(4)%id_jprod_ndet_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jhploss_nvmlgz_100","Vertically migrating large zooplankton nitrogen loss to higher preds. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(5)%id_jhploss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+	
     vardesc_temp = vardesc("jprod_don_nsmz_100","Small zooplankton dissolved org. nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     zoo(1)%id_jprod_don_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -3467,6 +3730,14 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("jremin_n_nvmmdz_100","Vertically migrating medium zooplankton nitrogen remineralization integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(4)%id_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
+    vardesc_temp = vardesc("jremin_n_nvmlgz_100","Vertically migrating large zooplankton nitrogen remineralization integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    zoo(5)%id_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("jremin_n_hp_100","Higher predator nitrogen remineralization integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     cobalt%id_hp_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -3623,6 +3894,14 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_f_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+    vardesc_temp = vardesc("nvmmdz_100","Vertically migrating medium zooplankton nitrogen biomass in upper 100m",'h','1','s','mol m-2','f')
+    zoo(4)%id_f_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("nvmlgz_100","Vertically migrating large zooplankton nitrogen biomass in upper 100m",'h','1','s','mol m-2','f')
+    zoo(5)%id_f_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+		 
     vardesc_temp = vardesc("nbact_100","Bacterial nitrogen biomass in upper 100m",'h','1','s','mol m-2','f')
     bact(1)%id_f_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -5532,6 +5811,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('q_p_2_n_smz',zoo(1)%q_p_2_n, 1.0/20.0)          ! mol P mol N-1 
     call g_tracer_add_param('q_p_2_n_mdz',zoo(2)%q_p_2_n, 1.0/16.0)          ! mol P mol N-1 
     call g_tracer_add_param('q_p_2_n_lgz',zoo(3)%q_p_2_n, 1.0/16.0)          ! mol P mol N-1 
+    call g_tracer_add_param('q_p_2_n_vmmdz',zoo(4)%q_p_2_n, 1.0/16.0)          ! mol P mol N-1 
+    call g_tracer_add_param('q_p_2_n_vmlgz',zoo(5)%q_p_2_n, 1.0/16.0)          ! mol P mol N-1 
     !
     !-----------------------------------------------------------------------
     ! Bacteria Stoichiometry - presently static
@@ -5576,12 +5857,18 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('imax_smz',zoo(1)%imax, 0.9*1.42 / sperd)              ! s-1
     call g_tracer_add_param('imax_mdz',zoo(2)%imax, 0.57 / sperd)              ! s-1
     call g_tracer_add_param('imax_lgz',zoo(3)%imax, 0.23 / sperd)              ! s-1
+    call g_tracer_add_param('imax_vmmdz',zoo(4)%imax, 0.23 / sperd)              ! s-1
+    call g_tracer_add_param('imax_vmlgz',zoo(5)%imax, 0.23 / sperd)              ! s-1
     call g_tracer_add_param('ki_smz',zoo(1)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ki_mdz',zoo(2)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ki_lgz',zoo(3)%ki, 1.25e-6)                       ! moles N kg-1
+    call g_tracer_add_param('ki_vmmdz',zoo(4)%ki, 1.25e-6)                       ! moles N kg-1
+    call g_tracer_add_param('ki_vmlgz',zoo(5)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ktemp_smz',zoo(1)%ktemp, 0.063)                   ! C-1
     call g_tracer_add_param('ktemp_mdz',zoo(2)%ktemp, 0.063)                   ! C-1
     call g_tracer_add_param('ktemp_lgz',zoo(3)%ktemp, 0.063)                   ! C-1
+    call g_tracer_add_param('ktemp_vmmdz',zoo(4)%ktemp, 0.063)                   ! C-1
+    call g_tracer_add_param('ktemp_vmlgz',zoo(5)%ktemp, 0.063)                   ! C-1
     !
     !-----------------------------------------------------------------------
     ! Bacterial growth and uptake parameters
@@ -5606,9 +5893,13 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('nswitch_smz',zoo(1)%nswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('nswitch_mdz',zoo(2)%nswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('nswitch_lgz',zoo(3)%nswitch, 2.0)          ! dimensionless
+    call g_tracer_add_param('nswitch_vmlgz',zoo(4)%nswitch, 2.0)          ! dimensionless
+    call g_tracer_add_param('nswitch_vmlgz',zoo(4)%nswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_smz',zoo(1)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_mdz',zoo(2)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_lgz',zoo(3)%mswitch, 2.0)          ! dimensionless
+    call g_tracer_add_param('mswitch_vmmdz',zoo(4)%mswitch, 2.0)          ! dimensionless
+    call g_tracer_add_param('mswitch_vmlgz',zoo(4)%mswitch, 2.0)          ! dimensionless
     ! innate prey availability for small zooplankton 
     call g_tracer_add_param('smz_ipa_smp',zoo(1)%ipa_smp, 1.0)          ! dimensionless
     call g_tracer_add_param('smz_ipa_lgp',zoo(1)%ipa_lgp, 0.0)          ! dimensionless
@@ -5616,6 +5907,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('smz_ipa_smz',zoo(1)%ipa_smz, 0.0)          ! dimensionless
     call g_tracer_add_param('smz_ipa_mdz',zoo(1)%ipa_mdz, 0.0)          ! dimensionless
     call g_tracer_add_param('smz_ipa_lgz',zoo(1)%ipa_lgz, 0.0)          ! dimensionless
+    call g_tracer_add_param('smz_ipa_vmmdz',zoo(1)%ipa_vmmdz, 0.0)         ! dimensionless
+    call g_tracer_add_param('smz_ipa_vmlgz',zoo(1)%ipa_vmlgz, 0.0)         ! dimensionless
     call g_tracer_add_param('smz_ipa_bact',zoo(1)%ipa_bact,0.5)         ! dimensionless
     call g_tracer_add_param('smz_ipa_det',zoo(1)%ipa_det, 0.0)          ! dimensionless
     ! innate prey availability for large zooplankton 
@@ -5625,6 +5918,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('mdz_ipa_smz',zoo(2)%ipa_smz, 1.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_mdz',zoo(2)%ipa_mdz, 0.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_lgz',zoo(2)%ipa_lgz, 0.0)          ! dimensionless
+    call g_tracer_add_param('mdz_ipa_vmmdz',zoo(2)%ipa_vmmdz, 0.0)         ! dimensionless
+    call g_tracer_add_param('mdz_ipa_vmlgz',zoo(2)%ipa_vmlgz, 0.0)         ! dimensionless
     call g_tracer_add_param('mdz_ipa_bact',zoo(2)%ipa_bact, 0.0)        ! dimensionless
     call g_tracer_add_param('mdz_ipa_det',zoo(2)%ipa_det, 0.0)          ! dimensionless
     ! innate prey availability large predatory zooplankton/krill
@@ -5634,8 +5929,32 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('lgz_ipa_smz',zoo(3)%ipa_smz, 0.0)         ! dimensionless
     call g_tracer_add_param('lgz_ipa_mdz',zoo(3)%ipa_mdz, 1.0)         ! dimensionless
     call g_tracer_add_param('lgz_ipa_lgz',zoo(3)%ipa_lgz, 0.0)         ! dimensionless
+    call g_tracer_add_param('lgz_ipa_vmmdz',zoo(3)%ipa_vmmdz, 0.0)         ! dimensionless
+    call g_tracer_add_param('lgz_ipa_vmlgz',zoo(3)%ipa_vmlgz, 0.0)         ! dimensionless
     call g_tracer_add_param('lgz_ipa_bact',zoo(3)%ipa_bact, 0.0)       ! dimensionless
     call g_tracer_add_param('lgz_ipa_det',zoo(3)%ipa_det, 0.0)         ! dimensionless
+    ! innate prey availability vertically migrating medium zooplankton
+    call g_tracer_add_param('vmmdz_ipa_smp',zoo(4)%ipa_smp, 0.0)   ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_lgp',zoo(4)%ipa_lgp, 1.0)         ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_diaz',zoo(4)%ipa_diaz, 1.0)       ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_smz',zoo(4)%ipa_smz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_mdz',zoo(4)%ipa_mdz, 1.0)         ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_lgz',zoo(4)%ipa_lgz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_vmmdz',zoo(4)%ipa_vmmdz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_vmlgz',zoo(4)%ipa_vmlgz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_bact',zoo(4)%ipa_bact, 0.0)       ! dimensionless
+    call g_tracer_add_param('vmmdz_ipa_det',zoo(4)%ipa_det, 0.0)         ! dimensionless
+    ! innate prey availability vertically migrating large zooplankton
+    call g_tracer_add_param('vmlgz_ipa_smp',zoo(5)%ipa_smp, 0.0)   ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_lgp',zoo(5)%ipa_lgp, 1.0)         ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_diaz',zoo(5)%ipa_diaz, 1.0)       ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_smz',zoo(5)%ipa_smz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_mdz',zoo(5)%ipa_mdz, 1.0)         ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_lgz',zoo(5)%ipa_lgz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_vmmdz',zoo(5)%ipa_vmmdz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_vmlgz',zoo(5)%ipa_vmlgz, 0.0)         ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_bact',zoo(5)%ipa_bact, 0.0)       ! dimensionless
+    call g_tracer_add_param('vmlgz_ipa_det',zoo(5)%ipa_det, 0.0)         ! dimensionless
     !
     !----------------------------------------------------------------------
     ! Zooplankton bioenergetics
@@ -5644,9 +5963,13 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('gge_max_smz',zoo(1)%gge_max, 0.4)                   ! dimensionless
     call g_tracer_add_param('gge_max_mdz',zoo(2)%gge_max, 0.4)                   ! dimensionless
     call g_tracer_add_param('gge_max_lgz',zoo(3)%gge_max, 0.4)                   ! dimensionless
+    call g_tracer_add_param('gge_max_vmmdz',zoo(4)%gge_max, 0.4)                   ! dimensionless
+    call g_tracer_add_param('gge_max_vmlgz',zoo(5)%gge_max, 0.4)                   ! dimensionless
     call g_tracer_add_param('bresp_smz',zoo(1)%bresp, 0.9*0.020 / sperd)        ! s-1
     call g_tracer_add_param('bresp_mdz',zoo(2)%bresp, 0.008 / sperd)        ! s-1
     call g_tracer_add_param('bresp_lgz',zoo(3)%bresp, 0.0032 / sperd)       ! s-1
+    call g_tracer_add_param('bresp_vmmdz',zoo(4)%bresp, 0.008 / sperd)        ! s-1
+    call g_tracer_add_param('bresp_vmlgz',zoo(5)%bresp, 0.0032 / sperd)       ! s-1
     !
     !----------------------------------------------------------------------
     ! Partitioning of zooplankton ingestion to other compartments
@@ -5655,30 +5978,48 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('phi_det_smz',zoo(1)%phi_det, 0.05)            ! dimensionless
     call g_tracer_add_param('phi_det_mdz',zoo(2)%phi_det, 0.20)            ! dimensionless
     call g_tracer_add_param('phi_det_lgz',zoo(3)%phi_det, 0.30)            ! dimensionless
+    call g_tracer_add_param('phi_det_vmmdz',zoo(4)%phi_det, 0.20)            ! dimensionless
+    call g_tracer_add_param('phi_det_vmlgz',zoo(5)%phi_det, 0.30)            ! dimensionless
     call g_tracer_add_param('phi_ldon_smz',zoo(1)%phi_ldon, 0.7*0.25)    ! dimensionless
     call g_tracer_add_param('phi_ldon_mdz',zoo(2)%phi_ldon, 0.7*0.10)    ! dimensionless
     call g_tracer_add_param('phi_ldon_lgz',zoo(3)%phi_ldon, 0.7*0.0)     ! dimensionless
+    call g_tracer_add_param('phi_ldon_vmmdz',zoo(4)%phi_ldon, 0.7*0.10)    ! dimensionless
+    call g_tracer_add_param('phi_ldon_vmlgz',zoo(5)%phi_ldon, 0.7*0.0)     ! dimensionless
     call g_tracer_add_param('phi_ldop_smz',zoo(1)%phi_ldop, 0.65*0.25)     ! dimensionless
     call g_tracer_add_param('phi_ldop_mdz',zoo(2)%phi_ldop, 0.65*0.10)     ! dimensionless
     call g_tracer_add_param('phi_ldop_lgz',zoo(3)%phi_ldop, 0.65*0.0)      ! dimensionless
+    call g_tracer_add_param('phi_ldop_vmmdz',zoo(4)%phi_ldop, 0.65*0.10)     ! dimensionless
+    call g_tracer_add_param('phi_ldop_vmlgz',zoo(5)%phi_ldop, 0.65*0.0)      ! dimensionless
     call g_tracer_add_param('phi_srdon_smz',zoo(1)%phi_srdon, 0.1*0.25)    ! dimensionless
     call g_tracer_add_param('phi_srdon_mdz',zoo(2)%phi_srdon, 0.1*0.10)    ! dimensionless
     call g_tracer_add_param('phi_srdon_lgz',zoo(3)%phi_srdon, 0.1*0.0)     ! dimensionless
+    call g_tracer_add_param('phi_srdon_vmmdz',zoo(4)%phi_srdon, 0.1*0.10)    ! dimensionless
+    call g_tracer_add_param('phi_srdon_vmlgz',zoo(5)%phi_srdon, 0.1*0.0)     ! dimensionless
     call g_tracer_add_param('phi_srdop_smz',zoo(1)%phi_srdop, 0.15*0.25)   ! dimensionless
     call g_tracer_add_param('phi_srdop_mdz',zoo(2)%phi_srdop, 0.15*0.10)   ! dimensionless
     call g_tracer_add_param('phi_srdop_lgz',zoo(3)%phi_srdop, 0.15*0.0)    ! dimensionless
+    call g_tracer_add_param('phi_srdop_vmmdz',zoo(4)%phi_srdop, 0.15*0.10)   ! dimensionless
+    call g_tracer_add_param('phi_srdop_vmlgz',zoo(5)%phi_srdop, 0.15*0.0)    ! dimensionless
     call g_tracer_add_param('phi_sldon_smz',zoo(1)%phi_sldon, 0.2*0.25)    ! dimensionless
     call g_tracer_add_param('phi_sldon_mdz',zoo(2)%phi_sldon, 0.2*0.10)    ! dimensionless
     call g_tracer_add_param('phi_sldon_lgz',zoo(3)%phi_sldon, 0.2*0.0)     ! dimensionless
+    call g_tracer_add_param('phi_sldon_vmmdz',zoo(4)%phi_sldon, 0.2*0.10)    ! dimensionless
+    call g_tracer_add_param('phi_sldon_vmlgz',zoo(5)%phi_sldon, 0.2*0.0)     ! dimensionless
     call g_tracer_add_param('phi_sldop_smz',zoo(1)%phi_sldop, 0.2*0.25)    ! dimensionless
     call g_tracer_add_param('phi_sldop_mdz',zoo(2)%phi_sldop, 0.2*0.10)    ! dimensionless
     call g_tracer_add_param('phi_sldop_lgz',zoo(3)%phi_sldop, 0.2*0.0)     ! dimensionless
+    call g_tracer_add_param('phi_sldop_vmmdz',zoo(4)%phi_sldop, 0.2*0.10)    ! dimensionless
+    call g_tracer_add_param('phi_sldop_vmlgz',zoo(5)%phi_sldop, 0.2*0.0)     ! dimensionless
     call g_tracer_add_param('phi_nh4_smz',zoo(1)%phi_nh4, 0.30)            ! dimensionless
     call g_tracer_add_param('phi_nh4_mdz',zoo(2)%phi_nh4, 0.30)            ! dimensionless
     call g_tracer_add_param('phi_nh4_lgz',zoo(3)%phi_nh4, 0.30)            ! dimensionless
+    call g_tracer_add_param('phi_nh4_vmmdz',zoo(4)%phi_nh4, 0.30)            ! dimensionless
+    call g_tracer_add_param('phi_nh4_vmlgz',zoo(5)%phi_nh4, 0.30)            ! dimensionless
     call g_tracer_add_param('phi_po4_smz',zoo(1)%phi_po4, 0.30)            ! dimensionless
     call g_tracer_add_param('phi_po4_mdz',zoo(2)%phi_po4, 0.30)            ! dimensionless
     call g_tracer_add_param('phi_po4_lgz',zoo(3)%phi_po4, 0.30)            ! dimensionless
+    call g_tracer_add_param('phi_po4_vmmdz',zoo(4)%phi_po4, 0.30)            ! dimensionless
+    call g_tracer_add_param('phi_po4_vmlgz',zoo(5)%phi_po4, 0.30)            ! dimensionless
     !
     !----------------------------------------------------------------------
     ! Partitioning of viral losses to various dissolved pools
@@ -5707,6 +6048,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('hp_ipa_smz',  cobalt%hp_ipa_smz, 0.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_mdz',  cobalt%hp_ipa_mdz, 1.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_lgz',  cobalt%hp_ipa_lgz, 1.0)         ! dimensionless
+    call g_tracer_add_param('hp_ipa_vmmdz',  cobalt%hp_ipa_vmmdz, 1.0)         ! dimensionless
+    call g_tracer_add_param('hp_ipa_vmlgz',  cobalt%hp_ipa_vmlgz, 1.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_bact', cobalt%hp_ipa_bact,0.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_det',  cobalt%hp_ipa_det, 0.0)         ! dimensionless
     call g_tracer_add_param('hp_phi_det',  cobalt%hp_phi_det, 0.35)        ! dimensionless
@@ -6243,10 +6586,31 @@ write (stdlogunit, generic_COBALT_nml)
     !
     call g_tracer_add(tracer_list,package_name,&
          name       = 'nlgz',     &
-         longname   = 'large Zooplankton Nitrogen', &
+         longname   = 'Large Zooplankton Nitrogen', &
          units      = 'mol/kg',   &
          prog       = .true.     ) 
 
+    !
+    !     Vertically migrating medium zooplankton N
+    !
+    call g_tracer_add(tracer_list,package_name,&
+         name       = 'nvmmdz',     &
+         longname   = 'Vertically Migrating Medium Zooplankton Nitrogen', &
+         units      = 'mol/kg',   &
+         prog       = .true.     ) 
+		 
+
+    !
+    !     Vertically migrating large zooplankton N
+    !
+    call g_tracer_add(tracer_list,package_name,&
+         name       = 'nvmlgz',     &
+         longname   = 'Vertically Migrating Large Zooplankton Nitrogen', &
+         units      = 'mol/kg',   &
+         prog       = .true.     ) 
+		 
+		 
+		 
       if (do_14c) then                                        !<<RADIOCARBON
       !       D14IC (Dissolved inorganic radiocarbon)
       !
@@ -6868,6 +7232,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_get_values(tracer_list,'nsmz'    ,'field',zoo(1)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
     call g_tracer_get_values(tracer_list,'nmdz'    ,'field',zoo(2)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
     call g_tracer_get_values(tracer_list,'nlgz'    ,'field',zoo(3)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
+    call g_tracer_get_values(tracer_list,'nvmmdz'  ,'field',zoo(4)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
+    call g_tracer_get_values(tracer_list,'nvmlgz'  ,'field',zoo(5)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
     !
     ! bacteria
     !
@@ -7326,7 +7692,9 @@ write (stdlogunit, generic_COBALT_nml)
        ipa_matrix(m,5) = zoo(m)%ipa_smz
        ipa_matrix(m,6) = zoo(m)%ipa_mdz
        ipa_matrix(m,7) = zoo(m)%ipa_lgz
-       ipa_matrix(m,8) = zoo(m)%ipa_det
+       ipa_matrix(m,8) = zoo(m)%ipa_vmmdz
+       ipa_matrix(m,9) = zoo(m)%ipa_vmlgz
+       ipa_matrix(m,10) = zoo(m)%ipa_det
        tot_prey(m) = 0.0
        do n = 1,NUM_PREY !{
            pa_matrix(m,n) = 0.0
@@ -7346,7 +7714,9 @@ write (stdlogunit, generic_COBALT_nml)
     hp_ipa_vec(5) = cobalt%hp_ipa_smz
     hp_ipa_vec(6) = cobalt%hp_ipa_mdz
     hp_ipa_vec(7) = cobalt%hp_ipa_lgz
-    hp_ipa_vec(8) = cobalt%hp_ipa_det
+    hp_ipa_vec(8) = cobalt%hp_ipa_vmmdz
+    hp_ipa_vec(9) = cobalt%hp_ipa_vmlgz
+    hp_ipa_vec(10) = cobalt%hp_ipa_det
     tot_prey_hp = 0.0
     do n = 1,NUM_PREY  !{  
        hp_pa_vec(n) = 0.0                  
@@ -7364,18 +7734,24 @@ write (stdlogunit, generic_COBALT_nml)
     prey_p2n_vec(5) = zoo(1)%q_p_2_n
     prey_p2n_vec(6) = zoo(2)%q_p_2_n
     prey_p2n_vec(7) = zoo(3)%q_p_2_n
+    prey_p2n_vec(8) = zoo(4)%q_p_2_n
+    prey_p2n_vec(9) = zoo(5)%q_p_2_n
 
     prey_fe2n_vec(4) = 0.0
     prey_fe2n_vec(5) = 0.0
     prey_fe2n_vec(6) = 0.0
     prey_fe2n_vec(7) = 0.0
-
+    prey_fe2n_vec(8) = 0.0
+    prey_fe2n_vec(9) = 0.0
+	
     prey_si2n_vec(1) = 0.0
     prey_si2n_vec(3) = 0.0
     prey_si2n_vec(4) = 0.0
     prey_si2n_vec(5) = 0.0
     prey_si2n_vec(6) = 0.0
     prey_si2n_vec(7) = 0.0
+    prey_si2n_vec(8) = 0.0
+    prey_si2n_vec(9) = 0.0
 
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec; !{
 
@@ -7385,7 +7761,7 @@ write (stdlogunit, generic_COBALT_nml)
 
        ! Calculate the temperature and oxygen limitations, no ingestion
        ! in low o2 environments
-       do m = 1,3  !{
+       do m = 1,NUM_ZOO  !{
           zoo(m)%temp_lim(i,j,k) = exp(zoo(m)%ktemp*Temp(i,j,k))
           zoo(m)%o2lim(i,j,k) = max((cobalt%f_o2(i,j,k) - cobalt%o2_min),0.0)/ & 
                                 (cobalt%k_o2 + max(cobalt%f_o2(i,j,k)-cobalt%o2_min,0.0))
@@ -7405,16 +7781,18 @@ write (stdlogunit, generic_COBALT_nml)
        prey_vec(5) = max(zoo(1)%f_n(i,j,k) - cobalt%refuge_conc,0.0)
        prey_vec(6) = max(zoo(2)%f_n(i,j,k) - cobalt%refuge_conc,0.0)
        prey_vec(7) = max(zoo(3)%f_n(i,j,k) - cobalt%refuge_conc,0.0)
-       prey_vec(8) = max(cobalt%f_ndet(i,j,k) - cobalt%refuge_conc,0.0)
+       prey_vec(8) = max(zoo(4)%f_n(i,j,k) - cobalt%refuge_conc,0.0)
+       prey_vec(9) = max(zoo(5)%f_n(i,j,k) - cobalt%refuge_conc,0.0)
+       prey_vec(10) = max(cobalt%f_ndet(i,j,k) - cobalt%refuge_conc,0.0)
        ! 
        ! Set dynamic stoichiometric rations inside k,j,i loop
-       prey_p2n_vec(8) = cobalt%f_pdet(i,j,k)/(cobalt%f_ndet(i,j,k)+epsln)
+       prey_p2n_vec(10) = cobalt%f_pdet(i,j,k)/(cobalt%f_ndet(i,j,k)+epsln)
        prey_fe2n_vec(1) = phyto(DIAZO)%q_fe_2_n(i,j,k)
        prey_fe2n_vec(2) = phyto(LARGE)%q_fe_2_n(i,j,k)
        prey_fe2n_vec(3) = phyto(SMALL)%q_fe_2_n(i,j,k)
-       prey_fe2n_vec(8) = cobalt%f_fedet(i,j,k)/(cobalt%f_ndet(i,j,k)+epsln)
+       prey_fe2n_vec(10) = cobalt%f_fedet(i,j,k)/(cobalt%f_ndet(i,j,k)+epsln)
        prey_si2n_vec(2) = phyto(LARGE)%q_si_2_n(i,j,k)
-       prey_si2n_vec(8) = cobalt%f_sidet(i,j,k)/(cobalt%f_ndet(i,j,k)+epsln)
+       prey_si2n_vec(10) = cobalt%f_sidet(i,j,k)/(cobalt%f_ndet(i,j,k)+epsln)
 
        !
        ! Calculate zooplankton ingestion
@@ -7481,14 +7859,15 @@ write (stdlogunit, generic_COBALT_nml)
        zoo(m)%jingest_sio2(i,j,k) = ingest_matrix(m,2)*prey_si2n_vec(2)
 
        !
-       ! Large zooplankton (m = 3) consuming diazotrophs (2), large phytoplankton (2)
-       ! and medium zooplankton (6)
+       ! Large zooplankton (m = 3) consuming diazotrophs (1), large phytoplankton (2),
+       ! medium non-migratory zooplankton (6), and medium migratory zooplankton (8)
        !
 
        m = 3
        sw_fac_denom = (ipa_matrix(m,1)*prey_vec(1))**zoo(m)%nswitch + &
                       (ipa_matrix(m,2)*prey_vec(2))**zoo(m)%nswitch + &
-                      (ipa_matrix(m,6)*prey_vec(6))**zoo(m)%nswitch
+                      (ipa_matrix(m,6)*prey_vec(6))**zoo(m)%nswitch + &
+                      (ipa_matrix(m,8)*prey_vec(8))**zoo(m)%nswitch
        pa_matrix(m,1) = ipa_matrix(m,1)* &
                         ( (ipa_matrix(m,1)*prey_vec(1))**zoo(m)%nswitch / &
                           (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
@@ -7498,27 +7877,115 @@ write (stdlogunit, generic_COBALT_nml)
        pa_matrix(m,6) = ipa_matrix(m,6)* &
                         ( (ipa_matrix(m,6)*prey_vec(6))**zoo(m)%nswitch / &
                           (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       pa_matrix(m,8) = ipa_matrix(m,8)* &
+                        ( (ipa_matrix(m,8)*prey_vec(8))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)	   
        tot_prey(m) = pa_matrix(m,1)*prey_vec(1) + pa_matrix(m,2)*prey_vec(2) + &
-                     pa_matrix(m,6)*prey_vec(6)
+                     pa_matrix(m,6)*prey_vec(6) + pa_matrix(m,8)*prey_vec(8)
        ingest_matrix(m,1) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,1)*prey_vec(1)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
        ingest_matrix(m,2) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,2)*prey_vec(2)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
        ingest_matrix(m,6) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
                      pa_matrix(m,6)*prey_vec(6)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       ingest_matrix(m,8) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,8)*prey_vec(8)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))	   
        zoo(m)%jingest_n(i,j,k) = ingest_matrix(m,1) + ingest_matrix(m,2) + &
-                                 ingest_matrix(m,6)
+                                 ingest_matrix(m,6) + ingest_matrix(m,8)
        zoo(m)%jingest_p(i,j,k) = ingest_matrix(m,1)*prey_p2n_vec(1) + &
                                  ingest_matrix(m,2)*prey_p2n_vec(2) + &
-                                 ingest_matrix(m,6)*prey_p2n_vec(6)
+                                 ingest_matrix(m,6)*prey_p2n_vec(6) + &
+                                 ingest_matrix(m,8)*prey_p2n_vec(8)
+       zoo(m)%jingest_fe(i,j,k) = ingest_matrix(m,1)*prey_fe2n_vec(1) + &
+                                 ingest_matrix(m,2)*prey_fe2n_vec(2)
+       zoo(m)%jingest_sio2(i,j,k) = ingest_matrix(m,2)*prey_si2n_vec(2)
+	   
+       !
+       ! Vertically migrating medium zooplankton (m = 4) consuming diazotrophs (1), large
+       ! phytoplankton (2), and small zooplankton (5) 
+       !
+
+       m = 4
+       sw_fac_denom = (ipa_matrix(m,1)*prey_vec(1))**zoo(m)%nswitch + &
+                      (ipa_matrix(m,2)*prey_vec(2))**zoo(m)%nswitch + &
+                      (ipa_matrix(m,5)*prey_vec(5))**zoo(m)%nswitch
+       pa_matrix(m,1) = ipa_matrix(m,1)* &
+                        ( (ipa_matrix(m,1)*prey_vec(1))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       pa_matrix(m,2) = ipa_matrix(m,2)* & 
+                        ( (ipa_matrix(m,2)*prey_vec(2))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       pa_matrix(m,5) = ipa_matrix(m,5)* & 
+                        ( (ipa_matrix(m,5)*prey_vec(5))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       tot_prey(m) = pa_matrix(m,1)*prey_vec(1) + pa_matrix(m,2)*prey_vec(2) + &
+                     pa_matrix(m,5)*prey_vec(5)
+       ingest_matrix(m,1) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,1)*prey_vec(1)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       ingest_matrix(m,2) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,2)*prey_vec(2)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       ingest_matrix(m,5) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,5)*prey_vec(5)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       zoo(m)%jingest_n(i,j,k) = ingest_matrix(m,1) + ingest_matrix(m,2) + &
+                                 ingest_matrix(m,5)
+       zoo(m)%jingest_p(i,j,k) = ingest_matrix(m,1)*prey_p2n_vec(1) + &
+                                 ingest_matrix(m,2)*prey_p2n_vec(2) + &
+                                 ingest_matrix(m,5)*prey_p2n_vec(5)
+       zoo(m)%jingest_fe(i,j,k) = ingest_matrix(m,1)*prey_fe2n_vec(1) + &
+                                 ingest_matrix(m,2)*prey_fe2n_vec(2)
+       zoo(m)%jingest_sio2(i,j,k) = ingest_matrix(m,2)*prey_si2n_vec(2)
+	   
+       !
+       ! Vertically migrating large zooplankton (m = 5) consuming diazotrophs (1), large phytoplankton (2),
+       ! medium non-migratory zooplankton (6), and medium migratory zooplankton (8)
+       !
+
+       m = 5
+       sw_fac_denom = (ipa_matrix(m,1)*prey_vec(1))**zoo(m)%nswitch + &
+                      (ipa_matrix(m,2)*prey_vec(2))**zoo(m)%nswitch + &
+                      (ipa_matrix(m,6)*prey_vec(6))**zoo(m)%nswitch + &
+                      (ipa_matrix(m,8)*prey_vec(8))**zoo(m)%nswitch
+       pa_matrix(m,1) = ipa_matrix(m,1)* &
+                        ( (ipa_matrix(m,1)*prey_vec(1))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       pa_matrix(m,2) = ipa_matrix(m,2)* &
+                        ( (ipa_matrix(m,2)*prey_vec(2))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       pa_matrix(m,6) = ipa_matrix(m,6)* &
+                        ( (ipa_matrix(m,6)*prey_vec(6))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)
+       pa_matrix(m,8) = ipa_matrix(m,8)* &
+                        ( (ipa_matrix(m,8)*prey_vec(8))**zoo(m)%nswitch / &
+                          (sw_fac_denom+epsln) )**(1.0/zoo(m)%mswitch)	   
+       tot_prey(m) = pa_matrix(m,1)*prey_vec(1) + pa_matrix(m,2)*prey_vec(2) + &
+                     pa_matrix(m,6)*prey_vec(6) + pa_matrix(m,8)*prey_vec(8)
+       ingest_matrix(m,1) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,1)*prey_vec(1)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       ingest_matrix(m,2) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,2)*prey_vec(2)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       ingest_matrix(m,6) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,6)*prey_vec(6)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))
+       ingest_matrix(m,8) = zoo(m)%temp_lim(i,j,k)*zoo(m)%o2lim(i,j,k)*zoo(m)%imax* &
+                     pa_matrix(m,8)*prey_vec(8)*zoo(m)%f_n(i,j,k)/(zoo(m)%ki+tot_prey(m))	   
+       zoo(m)%jingest_n(i,j,k) = ingest_matrix(m,1) + ingest_matrix(m,2) + &
+                                 ingest_matrix(m,6) + ingest_matrix(m,8)
+       zoo(m)%jingest_p(i,j,k) = ingest_matrix(m,1)*prey_p2n_vec(1) + &
+                                 ingest_matrix(m,2)*prey_p2n_vec(2) + &
+                                 ingest_matrix(m,6)*prey_p2n_vec(6) + &
+                                 ingest_matrix(m,8)*prey_p2n_vec(8)
        zoo(m)%jingest_fe(i,j,k) = ingest_matrix(m,1)*prey_fe2n_vec(1) + &
                                  ingest_matrix(m,2)*prey_fe2n_vec(2)
        zoo(m)%jingest_sio2(i,j,k) = ingest_matrix(m,2)*prey_si2n_vec(2)
 
-       cobalt%total_filter_feeding(i,j,k) = ingest_matrix(2,1) + ingest_matrix(2,2) + &
-          ingest_matrix(2,3) + ingest_matrix(3,1) + ingest_matrix(3,2) + & 
-          ingest_matrix(3,3)
 
+       ! Total filter feeding
+	   
+       cobalt%total_filter_feeding(i,j,k) = &
+		   ingest_matrix(2,1) + ingest_matrix(2,2) + ingest_matrix(2,3) + &
+		   ingest_matrix(3,1) + ingest_matrix(3,2) + ingest_matrix(3,3) + &
+		   ingest_matrix(4,1) + ingest_matrix(4,2) + ingest_matrix(4,3) + &	   
+		   ingest_matrix(5,1) + ingest_matrix(5,2) + ingest_matrix(5,3)
+		  
        !
        ! Calculate losses to zooplankton
        !
@@ -7568,23 +8035,41 @@ write (stdlogunit, generic_COBALT_nml)
        ! The higher-predator ingestion calculations mirror those used for zooplankton
        !
        sw_fac_denom = (hp_ipa_vec(6)*prey_vec(6))**cobalt%nswitch_hp + &
-                      (hp_ipa_vec(7)*prey_vec(7))**cobalt%nswitch_hp
+                      (hp_ipa_vec(7)*prey_vec(7))**cobalt%nswitch_hp + &
+                      (hp_ipa_vec(8)*prey_vec(8))**cobalt%nswitch_hp + &
+                      (hp_ipa_vec(9)*prey_vec(9))**cobalt%nswitch_hp
        hp_pa_vec(6) = hp_ipa_vec(6)* &
                       ( (hp_ipa_vec(6)*prey_vec(6))**cobalt%nswitch_hp / &
                         (sw_fac_denom+epsln) )**(1.0/cobalt%mswitch_hp)
        hp_pa_vec(7) = hp_ipa_vec(7)* &
                       ( (hp_ipa_vec(7)*prey_vec(7))**cobalt%nswitch_hp / &
                         (sw_fac_denom+epsln) )**(1.0/cobalt%mswitch_hp)
-       tot_prey_hp = hp_pa_vec(6)*prey_vec(6) + hp_pa_vec(7)*prey_vec(7)
+       hp_pa_vec(8) = hp_ipa_vec(8)* &
+                      ( (hp_ipa_vec(8)*prey_vec(8))**cobalt%nswitch_hp / &
+                        (sw_fac_denom+epsln) )**(1.0/cobalt%mswitch_hp)
+       hp_pa_vec(9) = hp_ipa_vec(9)* &
+                      ( (hp_ipa_vec(9)*prey_vec(9))**cobalt%nswitch_hp / &
+                        (sw_fac_denom+epsln) )**(1.0/cobalt%mswitch_hp)
+       tot_prey_hp = hp_pa_vec(6)*prey_vec(6) + hp_pa_vec(7)*prey_vec(7) + &
+					 hp_pa_vec(8)*prey_vec(8) + hp_pa_vec(9)*prey_vec(9)
        hp_ingest_vec(6) = cobalt%hp_temp_lim(i,j,k)*cobalt%hp_o2lim(i,j,k)*cobalt%imax_hp* &
                           hp_pa_vec(6)*prey_vec(6)*tot_prey_hp**(cobalt%coef_hp-1.0)/ &
                             (cobalt%ki_hp+tot_prey_hp)
        hp_ingest_vec(7) = cobalt%hp_temp_lim(i,j,k)*cobalt%hp_o2lim(i,j,k)*cobalt%imax_hp* &
                           hp_pa_vec(7)*prey_vec(7)*tot_prey_hp**(cobalt%coef_hp-1.0)/ &
                             (cobalt%ki_hp+tot_prey_hp)
-       cobalt%hp_jingest_n(i,j,k) = hp_ingest_vec(6) + hp_ingest_vec(7)
+       hp_ingest_vec(8) = cobalt%hp_temp_lim(i,j,k)*cobalt%hp_o2lim(i,j,k)*cobalt%imax_hp* &
+                          hp_pa_vec(8)*prey_vec(8)*tot_prey_hp**(cobalt%coef_hp-1.0)/ &
+                            (cobalt%ki_hp+tot_prey_hp)
+       hp_ingest_vec(9) = cobalt%hp_temp_lim(i,j,k)*cobalt%hp_o2lim(i,j,k)*cobalt%imax_hp* &
+                          hp_pa_vec(9)*prey_vec(9)*tot_prey_hp**(cobalt%coef_hp-1.0)/ &
+                            (cobalt%ki_hp+tot_prey_hp)
+       cobalt%hp_jingest_n(i,j,k) = hp_ingest_vec(6) + hp_ingest_vec(7) + &
+								    hp_ingest_vec(8) + hp_ingest_vec(9)
        cobalt%hp_jingest_p(i,j,k) = hp_ingest_vec(6)*prey_p2n_vec(6) + &
-                                    hp_ingest_vec(7)*prey_p2n_vec(7)
+                                    hp_ingest_vec(7)*prey_p2n_vec(7) + &
+									hp_ingest_vec(8)*prey_p2n_vec(8) + &
+									hp_ingest_vec(9)*prey_p2n_vec(9)
        !
        ! Calculate losses to higher predators
        !
@@ -7877,13 +8362,18 @@ write (stdlogunit, generic_COBALT_nml)
     !
     ! 4.2: Calculate the production rate of aragonite and calcite detritus 
     !
-
+	! JYL TODO - find a more precise way to calculate arag and calcite production
+	! this currently works and is exact if phi_det of migrating vs. non-migrating zooplankton are the same
+	! in which case you don't need the averaging of the migrating vs. non-migrating phi_det. 
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec   !{
-        cobalt%jprod_cadet_arag(i,j,k) = (zoo(2)%jzloss_n(i,j,k)*zoo(3)%phi_det + &
-                       (zoo(2)%jhploss_n(i,j,k) + zoo(3)%jhploss_n(i,j,k))*cobalt%hp_phi_det)* &
+        cobalt%jprod_cadet_arag(i,j,k) = (zoo(2)%jzloss_n(i,j,k)*(zoo(3)%phi_det + zoo(5)%phi_det)/2.0 + & 
+					   zoo(4)%jzloss_n(i,j,k)*(zoo(3)%phi_det + zoo(5)%phi_det)/2.0 + &
+                       (zoo(2)%jhploss_n(i,j,k) + zoo(3)%jhploss_n(i,j,k) + zoo(4)%jhploss_n(i,j,k) + zoo(5)%jhploss_n(i,j,k))* &
+					   cobalt%hp_phi_det)* &
                        cobalt%ca_2_n_arag*min(cobalt%caco3_sat_max, max(0.0,cobalt%omega_arag(i,j,k) - 1.0)) + epsln 
-        cobalt%jprod_cadet_calc(i,j,k) = (zoo(1)%jzloss_n(i,j,k)*zoo(2)%phi_det + & 
-                       phyto(SMALL)%jzloss_n(i,j,k)*zoo(1)%phi_det + phyto(LARGE)%jzloss_n(i,j,k)*zoo(3)%phi_det + &  
+        cobalt%jprod_cadet_calc(i,j,k) = (zoo(1)%jzloss_n(i,j,k)*(zoo(2)%phi_det + zoo(4)%phi_det)/2.0 + & 
+                       phyto(SMALL)%jzloss_n(i,j,k)*zoo(1)%phi_det + &
+					   phyto(LARGE)%jzloss_n(i,j,k)*(zoo(3)%phi_det + zoo(5)%phi_det)/2.0 + &  
                        phyto(SMALL)%jaggloss_n(i,j,k) + phyto(LARGE)%jaggloss_n(i,j,k))*cobalt%ca_2_n_calc* &
                        min(cobalt%caco3_sat_max, max(0.0, cobalt%omega_calc(i,j,k) - 1.0)) + epsln
     enddo; enddo ; enddo !} i,j,k
@@ -8253,7 +8743,9 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_get_pointer(tracer_list,'nsmz'   ,'field',cobalt%p_nsmz   )
     call g_tracer_get_pointer(tracer_list,'nmdz'   ,'field',cobalt%p_nmdz   )
     call g_tracer_get_pointer(tracer_list,'nlgz'   ,'field',cobalt%p_nlgz   )
-
+    call g_tracer_get_pointer(tracer_list,'nvmmdz' ,'field',cobalt%p_nvmmdz   )
+    call g_tracer_get_pointer(tracer_list,'nvmlgz' ,'field',cobalt%p_nvmlgz   )
+	
     if (do_14c) then
        call g_tracer_get_pointer(tracer_list,'di14c','field',cobalt%p_di14c)
        call g_tracer_get_pointer(tracer_list,'do14c','field',cobalt%p_do14c)
@@ -8277,7 +8769,8 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
-                    cobalt%p_nlgz(i,j,k,tau))*grid_tmask(i,j,k)
+                    cobalt%p_nlgz(i,j,k,tau) + cobalt%p_nvmmdz(i,j,k,tau) + &
+                    cobalt%p_nvmlgz(i,j,k,tau))*grid_tmask(i,j,k)
          net_srcn(i,j,k) = (phyto(DIAZO)%juptake_n2(i,j,k) - cobalt%jno3denit_wc(i,j,k) - &
                     cobalt%jprod_n2amx(i,j,k) + cobalt%jno3_iceberg(i,j,k)) * dt*grid_tmask(i,j,k)  
          pre_totc(i,j,k) = (cobalt%p_dic(i,j,k,tau) + &
@@ -8287,7 +8780,8 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
-                    cobalt%p_nlgz(i,j,k,tau)))*grid_tmask(i,j,k)
+                    cobalt%p_nlgz(i,j,k,tau) + cobalt%p_nvmmdz(i,j,k,tau) + &
+                    cobalt%p_nvmlgz(i,j,k,tau)))*grid_tmask(i,j,k)
          pre_totp(i,j,k) = (cobalt%p_po4(i,j,k,tau) + cobalt%p_ndi(i,j,k,tau)*phyto(1)%p_2_n_static + &
                     cobalt%p_nlg(i,j,k,tau)*phyto(2)%p_2_n_static + &
                     cobalt%p_nsm(i,j,k,tau)*phyto(3)%p_2_n_static + &
@@ -8296,6 +8790,8 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_nsmz(i,j,k,tau)*zoo(1)%q_p_2_n + &
                     cobalt%p_nmdz(i,j,k,tau)*zoo(2)%q_p_2_n + &
                     cobalt%p_nlgz(i,j,k,tau)*zoo(3)%q_p_2_n + &
+                    cobalt%p_nvmmdz(i,j,k,tau)*zoo(4)%q_p_2_n + &
+                    cobalt%p_nvmlgz(i,j,k,tau)*zoo(5)%q_p_2_n + &
                     bact(1)%q_p_2_n*cobalt%p_nbact(i,j,k,tau))*grid_tmask(i,j,k)
          net_srcp(i,j,k) = cobalt%jpo4_iceberg(i,j,k)*dt*grid_tmask(i,j,k)
          pre_totfe(i,j,k) = (cobalt%p_fed(i,j,k,tau) + cobalt%p_fedi(i,j,k,tau) + &
@@ -8416,6 +8912,18 @@ write (stdlogunit, generic_COBALT_nml)
        cobalt%jnlgz(i,j,k) = zoo(3)%jprod_n(i,j,k) - zoo(3)%jzloss_n(i,j,k) - &
                              zoo(3)%jhploss_n(i,j,k)
        cobalt%p_nlgz(i,j,k,tau) = cobalt%p_nlgz(i,j,k,tau) + cobalt%jnlgz(i,j,k)*dt*grid_tmask(i,j,k)
+       !
+       ! Vertically migrating medium zooplankton
+       !
+       cobalt%jnvmmdz(i,j,k) = zoo(4)%jprod_n(i,j,k) - zoo(4)%jzloss_n(i,j,k) - &
+                             zoo(4)%jhploss_n(i,j,k)
+       cobalt%p_nvmmdz(i,j,k,tau) = cobalt%p_nvmmdz(i,j,k,tau) + cobalt%jnvmmdz(i,j,k)*dt*grid_tmask(i,j,k)
+       !
+       ! Vertically migrating large zooplankton
+       !
+       cobalt%jnvmlgz(i,j,k) = zoo(5)%jprod_n(i,j,k) - zoo(5)%jzloss_n(i,j,k) - &
+                             zoo(5)%jhploss_n(i,j,k)
+       cobalt%p_nvmlgz(i,j,k,tau) = cobalt%p_nvmlgz(i,j,k,tau) + cobalt%jnvmlgz(i,j,k)*dt*grid_tmask(i,j,k)
     enddo; enddo ; enddo  !} i,j,k
 !
     call mpp_clock_end(id_clock_source_sink_loop4)
@@ -8740,7 +9248,8 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
-                    cobalt%p_nlgz(i,j,k,tau))*grid_tmask(i,j,k)
+                    cobalt%p_nlgz(i,j,k,tau) + cobalt%p_nvmmdz(i,j,k,tau) + &
+                    cobalt%p_nvmlgz(i,j,k,tau))*grid_tmask(i,j,k)
          imbal = (post_totn(i,j,k) - pre_totn(i,j,k) - net_srcn(i,j,k))*86400.0/dt*1.03e6
          if (abs(imbal).gt.1.0e-9) then
            call mpp_error(FATAL,&
@@ -8754,7 +9263,8 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
-                    cobalt%p_nlgz(i,j,k,tau)))*grid_tmask(i,j,k)
+                    cobalt%p_nlgz(i,j,k,tau) + cobalt%p_nvmmdz(i,j,k,tau) + &
+                    cobalt%p_nvmlgz(i,j,k,tau)))*grid_tmask(i,j,k)
         imbal = (post_totc(i,j,k) - pre_totc(i,j,k))*86400.0/dt*1.03e6
          if (abs(imbal).gt.1.0e-9) then
            call mpp_error(FATAL,&
@@ -8769,6 +9279,8 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_nsmz(i,j,k,tau)*zoo(1)%q_p_2_n + &
                     cobalt%p_nmdz(i,j,k,tau)*zoo(2)%q_p_2_n + &
                     cobalt%p_nlgz(i,j,k,tau)*zoo(3)%q_p_2_n + &
+                    cobalt%p_nvmmdz(i,j,k,tau)*zoo(4)%q_p_2_n + &
+                    cobalt%p_nvmlgz(i,j,k,tau)*zoo(5)%q_p_2_n + &
                     bact(1)%q_p_2_n*cobalt%p_nbact(i,j,k,tau))*grid_tmask(i,j,k)
          imbal = (post_totp(i,j,k) - pre_totp(i,j,k) - net_srcp(i,j,k))*86400.0/dt*1.03e6
          if (abs(imbal).gt.1.0e-9) then
@@ -8875,7 +9387,7 @@ write (stdlogunit, generic_COBALT_nml)
          cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) + &
          cobalt%p_ldon(:,:,:,tau) + cobalt%p_sldon(:,:,:,tau) + cobalt%p_srdon(:,:,:,tau) +  &
          cobalt%p_ndet(:,:,:,tau) + cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + &
-         cobalt%p_nlgz(:,:,:,tau))) * rho_dzt(:,:,:)
+         cobalt%p_nlgz(:,:,:,tau) + cobalt%p_nvmmdz(:,:,:,tau) + cobalt%p_nvmlgz(:,:,:,tau))) * rho_dzt(:,:,:)
 
     cobalt%tot_layer_int_fe(:,:,:) = (cobalt%p_fed(:,:,:,tau) + cobalt%p_fedi(:,:,:,tau) + &
          cobalt%p_felg(:,:,:,tau) + cobalt%p_fesm(:,:,:,tau) + & 
@@ -8885,8 +9397,8 @@ write (stdlogunit, generic_COBALT_nml)
          cobalt%p_nh4(:,:,:,tau) + cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + &
          cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) + &
          cobalt%p_ldon(:,:,:,tau) + cobalt%p_sldon(:,:,:,tau) + cobalt%p_srdon(:,:,:,tau) +  cobalt%p_ndet(:,:,:,tau) + &
-         cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau)) * & 
-         rho_dzt(:,:,:)
+         cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau) + &
+		 cobalt%p_nvmmdz(:,:,:,tau) + cobalt%p_nvmlgz(:,:,:,tau)) * rho_dzt(:,:,:)
 
     cobalt%tot_layer_int_p(:,:,:) = (cobalt%p_po4(:,:,:,tau) + &
          cobalt%p_ndi(:,:,:,tau)*phyto(1)%p_2_n_static + &
@@ -8895,8 +9407,9 @@ write (stdlogunit, generic_COBALT_nml)
          cobalt%p_ldop(:,:,:,tau) + cobalt%p_sldop(:,:,:,tau) + &
          cobalt%p_srdop(:,:,:,tau) + cobalt%p_pdet(:,:,:,tau) + &
          bact(1)%q_p_2_n*cobalt%p_nbact(:,:,:,tau) + zoo(1)%q_p_2_n*cobalt%p_nsmz(:,:,:,tau) +  &
-         zoo(2)%q_p_2_n*cobalt%p_nmdz(:,:,:,tau) + zoo(3)%q_p_2_n*cobalt%p_nlgz(:,:,:,tau))  &
-         * rho_dzt(:,:,:)
+         zoo(2)%q_p_2_n*cobalt%p_nmdz(:,:,:,tau) + zoo(3)%q_p_2_n*cobalt%p_nlgz(:,:,:,tau) + &
+         zoo(4)%q_p_2_n*cobalt%p_nvmmdz(:,:,:,tau) + zoo(4)%q_p_2_n*cobalt%p_nvmlgz(:,:,:,tau)) * &
+         rho_dzt(:,:,:)
 
     cobalt%tot_layer_int_si(:,:,:) = (cobalt%p_sio4(:,:,:,tau) + cobalt%p_silg(:,:,:,tau) +   &
          cobalt%p_sidet(:,:,:,tau)) * rho_dzt(:,:,:)
@@ -8913,7 +9426,7 @@ write (stdlogunit, generic_COBALT_nml)
 
    cobalt%tot_layer_int_poc(:,:,:) = (cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + cobalt%p_nsm(:,:,:,tau) + &
          cobalt%p_nbact(:,:,:,tau) + cobalt%p_ndet(:,:,:,tau) + cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + &
-         cobalt%p_nlgz(:,:,:,tau))*cobalt%c_2_n*rho_dzt(:,:,:)
+         cobalt%p_nlgz(:,:,:,tau) + cobalt%p_nvmmdz(:,:,:,tau) + cobalt%p_nvmlgz(:,:,:,tau))*cobalt%c_2_n*rho_dzt(:,:,:)
 
 
     !
@@ -9122,20 +9635,15 @@ write (stdlogunit, generic_COBALT_nml)
        cobalt%jprod_diat_100(i,j) = phyto(LARGE)%jprod_n(i,j,1)*phyto(LARGE)%silim(i,j,1)*rho_dzt(i,j,1)
 ! added juptake_sio4_100 (large only)
        phyto(LARGE)%juptake_sio4_100(i,j) = phyto(LARGE)%juptake_sio4(i,j,1) * rho_dzt(i,j,1)
+	   
        do n = 1, NUM_ZOO  !{
           zoo(n)%jprod_n_100(i,j) = zoo(n)%jprod_n(i,j,1) * rho_dzt(i,j,1)
           zoo(n)%jingest_n_100(i,j) = zoo(n)%jingest_n(i,j,1) * rho_dzt(i,j,1)
           zoo(n)%jremin_n_100(i,j) = zoo(n)%jprod_nh4(i,j,1) * rho_dzt(i,j,1)
           zoo(n)%f_n_100(i,j) = zoo(n)%f_n(i,j,1) * rho_dzt(i,j,1)
-       enddo   !} n
-
-       do n = 1,2  !{
           zoo(n)%jzloss_n_100(i,j) = zoo(n)%jzloss_n(i,j,1) * rho_dzt(i,j,1)
           zoo(n)%jprod_don_100(i,j) = (zoo(n)%jprod_ldon(i,j,1) + zoo(n)%jprod_sldon(i,j,1) + &
              zoo(n)%jprod_srdon(i,j,1))  * rho_dzt(i,j,1)
-       enddo   !} n
-
-       do n = 2,3  !{
           zoo(n)%jhploss_n_100(i,j) = zoo(n)%jhploss_n(i,j,1) * rho_dzt(i,j,1)
           zoo(n)%jprod_ndet_100(i,j) = zoo(n)%jprod_ndet(i,j,1) * rho_dzt(i,j,1)
        enddo   !} n
@@ -9233,16 +9741,10 @@ write (stdlogunit, generic_COBALT_nml)
                 zoo(n)%jremin_n_100(i,j) = zoo(n)%jremin_n_100(i,j) + zoo(n)%jprod_nh4(i,j,k)* &
                    rho_dzt(i,j,k)
                 zoo(n)%f_n_100(i,j) = zoo(n)%f_n_100(i,j) + zoo(n)%f_n(i,j,k)*rho_dzt(i,j,k)
-             enddo !} n
-
-             do n = 1,2 !{
                 zoo(n)%jzloss_n_100(i,j) = zoo(n)%jzloss_n_100(i,j) + zoo(n)%jzloss_n(i,j,k)* &
                    rho_dzt(i,j,k)
                 zoo(n)%jprod_don_100(i,j) = zoo(n)%jprod_don_100(i,j) + (zoo(n)%jprod_ldon(i,j,k) + &
                    zoo(n)%jprod_sldon(i,j,k) + zoo(n)%jprod_srdon(i,j,k))*rho_dzt(i,j,k)
-             enddo !} n
-
-             do n = 2,3 !{
                 zoo(n)%jhploss_n_100(i,j) = zoo(n)%jhploss_n_100(i,j) + zoo(n)%jhploss_n(i,j,k)* &
                    rho_dzt(i,j,k)
                 zoo(n)%jprod_ndet_100(i,j) = zoo(n)%jprod_ndet_100(i,j) + zoo(n)%jprod_ndet(i,j,k)* &
@@ -9343,16 +9845,10 @@ write (stdlogunit, generic_COBALT_nml)
                zoo(n)%jremin_n_100(i,j) = zoo(n)%jremin_n_100(i,j) + zoo(n)%jprod_nh4(i,j,k_100)* &
                  drho_dzt
                zoo(n)%f_n_100(i,j) = zoo(n)%f_n_100(i,j) + zoo(n)%f_n(i,j,k_100)*drho_dzt
-           enddo !} n
-
-           do n = 1,2 !{
                zoo(n)%jzloss_n_100(i,j) = zoo(n)%jzloss_n_100(i,j) + zoo(n)%jzloss_n(i,j,k_100)* &
                  drho_dzt
                zoo(n)%jprod_don_100(i,j) = zoo(n)%jprod_don_100(i,j) + (zoo(n)%jprod_ldon(i,j,k_100) + &
                  zoo(n)%jprod_sldon(i,j,k_100) + zoo(n)%jprod_srdon(i,j,k_100))*drho_dzt
-           enddo !} n
-
-           do n = 2,3 !{
                zoo(n)%jhploss_n_100(i,j) = zoo(n)%jhploss_n_100(i,j) + zoo(n)%jhploss_n(i,j,k_100)* &
                  drho_dzt
                zoo(n)%jprod_ndet_100(i,j) = zoo(n)%jprod_ndet_100(i,j) + zoo(n)%jprod_ndet(i,j,k_100)* &
@@ -10621,13 +11117,10 @@ write (stdlogunit, generic_COBALT_nml)
           used = g_send_data(zoo(n)%id_jremin_n_100, zoo(n)%jremin_n_100,         &
           model_time, rmask = grid_tmask(:,:,1),&
           is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
-      if (zoo(n)%id_f_n_100 .gt. 0)     &
+       if (zoo(n)%id_f_n_100 .gt. 0)     &
           used = g_send_data(zoo(n)%id_f_n_100, zoo(n)%f_n_100,         &
           model_time, rmask = grid_tmask(:,:,1),&
           is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
-     enddo !} n
-
-     do n= 1,2  !{
        if (zoo(n)%id_jzloss_n_100 .gt. 0)     &
           used = g_send_data(zoo(n)%id_jzloss_n_100, zoo(n)%jzloss_n_100,         &
           model_time, rmask = grid_tmask(:,:,1),&
@@ -10636,9 +11129,6 @@ write (stdlogunit, generic_COBALT_nml)
           used = g_send_data(zoo(n)%id_jprod_don_100, zoo(n)%jprod_don_100,         &
           model_time, rmask = grid_tmask(:,:,1),&
           is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
-     enddo !} n
-
-     do n= 2,3  !{
        if (zoo(n)%id_jhploss_n_100 .gt. 0)     &
           used = g_send_data(zoo(n)%id_jhploss_n_100, zoo(n)%jhploss_n_100,         &
           model_time, rmask = grid_tmask(:,:,1),&
@@ -10986,8 +11476,9 @@ write (stdlogunit, generic_COBALT_nml)
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
     if (cobalt%id_zooc .gt. 0)            &
-        used = g_send_data(cobalt%id_zooc,  (cobalt%p_nlgz(:,:,:,tau) + cobalt%p_nsmz(:,:,:,tau) +  &
-        cobalt%p_nmdz(:,:,:,tau)) * cobalt%c_2_n * cobalt%Rho_0, &
+        used = g_send_data(cobalt%id_zooc,  (cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) +  &
+        cobalt%p_nlgz(:,:,:,tau) + cobalt%p_nvmmdz(:,:,:,tau) + cobalt%p_nvmlgz(:,:,:,tau)) * &
+		cobalt%c_2_n * cobalt%Rho_0, &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -11037,7 +11528,8 @@ write (stdlogunit, generic_COBALT_nml)
          is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
     if (cobalt%id_zmeso.gt. 0)  &
-         used = g_send_data(cobalt%id_zmeso,  (cobalt%p_nlgz(:,:,:,tau)+cobalt%p_nmdz(:,:,:,tau)) * cobalt%c_2_n * cobalt%Rho_0,  &
+         used = g_send_data(cobalt%id_zmeso,  (cobalt%p_nmdz(:,:,:,tau)+cobalt%p_nlgz(:,:,:,tau) + &
+		 cobalt%p_nvmmdz(:,:,:,tau)+cobalt%p_nvmlgz(:,:,:,tau)) * cobalt%c_2_n * cobalt%Rho_0,  &
          model_time, rmask = grid_tmask,&
          is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -11134,33 +11626,27 @@ write (stdlogunit, generic_COBALT_nml)
     if (cobalt%id_poc .gt. 0)            &
         used = g_send_data(cobalt%id_poc,  (cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + &
         cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) +  cobalt%p_ndet(:,:,:,tau) + &
-        cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau)) * cobalt%Rho_0 * cobalt%c_2_n,  &
+        cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau) + &
+		cobalt%p_nvmmdz(:,:,:,tau) + cobalt%p_nvmlgz(:,:,:,tau)) * cobalt%Rho_0 * cobalt%c_2_n,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
     if (cobalt%id_pon .gt. 0)            &
         used = g_send_data(cobalt%id_pon,  (cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + &
         cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) +  cobalt%p_ndet(:,:,:,tau) + &
-        cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau)) * cobalt%Rho_0,  &
+        cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau) + &
+		cobalt%p_nvmmdz(:,:,:,tau) + cobalt%p_nvmlgz(:,:,:,tau)) * cobalt%Rho_0,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
-! CAS: added bacteria and more general accomodation of static but different p_2_n ratios
     if (cobalt%id_pop .gt. 0)            &
         used = g_send_data(cobalt%id_pop,  (phyto(DIAZO)%p_2_n_static * cobalt%p_ndi(:,:,:,tau) + &
         phyto(LARGE)%p_2_n_static * cobalt%p_nlg(:,:,:,tau) + phyto(SMALL)%p_2_n_static * cobalt%p_nsm(:,:,:,tau) + &
         cobalt%p_pdet(:,:,:,tau) + zoo(1)%q_p_2_n * cobalt%p_nsmz(:,:,:,tau) + zoo(2)%q_p_2_n * cobalt%p_nmdz(:,:,:,tau) + &
-        zoo(3)%q_p_2_n * cobalt%p_nlgz(:,:,:,tau) + bact(1)%q_p_2_n * cobalt%p_nbact(:,:,:,tau)) * cobalt%Rho_0,  &
+        zoo(3)%q_p_2_n * cobalt%p_nlgz(:,:,:,tau) + zoo(4)%q_p_2_n * cobalt%p_nvmmdz(:,:,:,tau) + &
+        zoo(5)%q_p_2_n * cobalt%p_nvmlgz(:,:,:,tau) + bact(1)%q_p_2_n * cobalt%p_nbact(:,:,:,tau)) * cobalt%Rho_0,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-
-! CAS: old code, delete once satisfied with new code above
-!    if (cobalt%id_pop .gt. 0)            &
-!        used = g_send_data(cobalt%id_pop,  ((phyto(DIAZO)%p_2_n_static * cobalt%p_ndi(:,:,:,tau)) + cobalt%p_nlg(:,:,:,tau) + &
-!        cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) +  cobalt%p_pdet(:,:,:,tau) + &
-!        cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau)) * cobalt%Rho_0,  &
-!        model_time, rmask = grid_tmask,&
-!        is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
     if (cobalt%id_bfe .gt. 0)            &
         used = g_send_data(cobalt%id_bfe,  (cobalt%p_fedi(:,:,:,tau) + cobalt%p_felg(:,:,:,tau) + cobalt%p_fesm(:,:,:,tau) + & 
@@ -11439,8 +11925,9 @@ write (stdlogunit, generic_COBALT_nml)
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
     if (cobalt%id_zoocos .gt. 0)            &
-        used = g_send_data(cobalt%id_zoocos,  (cobalt%p_nlgz(:,:,1,tau) + cobalt%p_nsmz(:,:,1,tau) +  &
-        cobalt%p_nmdz(:,:,1,tau)) * cobalt%c_2_n * cobalt%Rho_0, &
+        used = g_send_data(cobalt%id_zoocos,  (cobalt%p_nsmz(:,:,1,tau) + cobalt%p_nmdz(:,:,1,tau) +  &
+        cobalt%p_nlgz(:,:,1,tau) + cobalt%p_nvmmdz(:,:,1,tau) + cobalt%p_nvmlgz(:,:,1,tau)) * &
+		cobalt%c_2_n * cobalt%Rho_0, &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -11490,7 +11977,8 @@ write (stdlogunit, generic_COBALT_nml)
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
     if (cobalt%id_zmesoos.gt. 0)  &
-        used = g_send_data(cobalt%id_zmesoos,  (cobalt%p_nlgz(:,:,1,tau)+cobalt%p_nmdz(:,:,1,tau)) * cobalt%c_2_n * cobalt%Rho_0,  &
+        used = g_send_data(cobalt%id_zmesoos,  (cobalt%p_nmdz(:,:,1,tau) + cobalt%p_nlgz(:,:,1,tau) + &
+		cobalt%p_nvmmdz(:,:,1,tau) + cobalt%p_nvmlgz(:,:,1,tau)) * cobalt%c_2_n * cobalt%Rho_0,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -11587,7 +12075,8 @@ write (stdlogunit, generic_COBALT_nml)
     if (cobalt%id_ponos .gt. 0)            &
         used = g_send_data(cobalt%id_ponos,  (cobalt%p_ndi(:,:,1,tau) + cobalt%p_nlg(:,:,1,tau) + &
         cobalt%p_nsm(:,:,1,tau) + cobalt%p_nbact(:,:,1,tau) +  cobalt%p_ndet(:,:,1,tau) + &
-        cobalt%p_nsmz(:,:,1,tau) + cobalt%p_nmdz(:,:,1,tau) + cobalt%p_nlgz(:,:,1,tau)) * cobalt%Rho_0,  &
+        cobalt%p_nsmz(:,:,1,tau) + cobalt%p_nmdz(:,:,1,tau) + cobalt%p_nlgz(:,:,1,tau) + &
+		cobalt%p_nvmmdz(:,:,1,tau) + cobalt%p_nvmlgz(:,:,1,tau)) * cobalt%Rho_0,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -11596,7 +12085,8 @@ write (stdlogunit, generic_COBALT_nml)
         phyto(LARGE)%p_2_n_static*cobalt%p_nlg(:,:,1,tau) + phyto(SMALL)%p_2_n_static*cobalt%p_nsm(:,:,1,tau) + &
         bact(1)%q_p_2_n*cobalt%p_nbact(:,:,1,tau) +  cobalt%p_pdet(:,:,1,tau) + &
         zoo(1)%q_p_2_n*cobalt%p_nsmz(:,:,1,tau) + zoo(2)%q_p_2_n*cobalt%p_nmdz(:,:,1,tau) + &
-        zoo(3)%q_p_2_n*cobalt%p_nlgz(:,:,1,tau)) * cobalt%Rho_0,  &
+        zoo(3)%q_p_2_n*cobalt%p_nlgz(:,:,1,tau) + zoo(4)%q_p_2_n*cobalt%p_nvmmdz(:,:,1,tau) + &
+        zoo(5)%q_p_2_n*cobalt%p_nvmlgz(:,:,1,tau)) * cobalt%Rho_0,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -12735,6 +13225,8 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(cobalt%jnsmz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnsmz=0.0
     allocate(cobalt%jnmdz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnmdz=0.0
     allocate(cobalt%jnlgz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnlgz=0.0
+    allocate(cobalt%jnvmmdz(isd:ied, jsd:jed, 1:nk))      ; cobalt%jnvmmdz=0.0
+    allocate(cobalt%jnvmlgz(isd:ied, jsd:jed, 1:nk))      ; cobalt%jnvmlgz=0.0
     allocate(cobalt%jalk(isd:ied, jsd:jed, 1:nk))         ; cobalt%jalk=0.0
     allocate(cobalt%jalk_plus_btm(isd:ied, jsd:jed, 1:nk)); cobalt%jalk_plus_btm=0.0
     allocate(cobalt%jcadet_arag(isd:ied, jsd:jed, 1:nk))  ; cobalt%jcadet_arag=0.0
@@ -12957,14 +13449,8 @@ write (stdlogunit, generic_COBALT_nml)
        allocate(zoo(n)%jingest_n_100(isd:ied,jsd:jed))    ; zoo(n)%jingest_n_100    = 0.0
        allocate(zoo(n)%jremin_n_100(isd:ied,jsd:jed))     ; zoo(n)%jremin_n_100     = 0.0
        allocate(zoo(n)%f_n_100(isd:ied,jsd:jed))          ; zoo(n)%f_n_100          = 0.0
-    enddo
-
-   do n = 1,2
        allocate(zoo(n)%jzloss_n_100(isd:ied,jsd:jed))     ; zoo(n)%jzloss_n_100     = 0.0
        allocate(zoo(n)%jprod_don_100(isd:ied,jsd:jed))    ; zoo(n)%jprod_don_100    = 0.0
-   enddo
-
-   do n = 2,3
        allocate(zoo(n)%jhploss_n_100(isd:ied,jsd:jed))    ; zoo(n)%jhploss_n_100     = 0.0
        allocate(zoo(n)%jprod_ndet_100(isd:ied,jsd:jed))   ; zoo(n)%jprod_ndet_100    = 0.0
    enddo
@@ -13224,6 +13710,8 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(cobalt%jnsmz)  
     deallocate(cobalt%jnmdz)  
     deallocate(cobalt%jnlgz)  
+    deallocate(cobalt%jnvmmdz)  
+    deallocate(cobalt%jnvmlgz)  
     deallocate(cobalt%jalk)  
     deallocate(cobalt%jalk_plus_btm)  
     deallocate(cobalt%jcadet_arag)  
@@ -13478,14 +13966,8 @@ write (stdlogunit, generic_COBALT_nml)
        deallocate(zoo(n)%jingest_n_100)
        deallocate(zoo(n)%jremin_n_100)
        deallocate(zoo(n)%f_n_100)
-    enddo
-
-    do n = 1,2
        deallocate(zoo(n)%jzloss_n_100)
        deallocate(zoo(n)%jprod_don_100)
-    enddo
-
-    do n = 2,3
        deallocate(zoo(n)%jhploss_n_100)
        deallocate(zoo(n)%jprod_ndet_100)
     enddo
