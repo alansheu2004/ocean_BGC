@@ -728,6 +728,8 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           jnsmz,&
           jnmdz,&
           jnlgz,&
+          jnvmmdz,&
+          jnvmlgz,&
           jalk,&
           jalk_plus_btm,&
           jcadet_arag,&
@@ -997,8 +999,8 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           p_nsmz,&
           p_nmdz,&
           p_nlgz,&
-		  p_nvmmdz,&
-		  p_nvmlgz
+          p_nvmmdz,&
+          p_nvmlgz
 
       real, dimension (:,:), allocatable :: &
           runoff_flux_alk,&
