@@ -410,8 +410,6 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           jzloss_p,     & ! Losses of p due to consumption by other zooplankton groups
           jhploss_n,        & ! Losses of n due to consumption by unresolved higher preds
           jhploss_p,        & ! Losses of p due to consumption by unresolved higher preds
-          jupswim_n,        & ! flux of n to the surface layer due to upward swimming
-          jupswim_p,        & ! flux of p to the surface layer due to upward swimming
           jingest_n,        & ! Total ingestion of n
           jingest_p,        & ! Total ingestion of p
           jingest_sio2,     & ! Total ingestion of silicate
@@ -440,8 +438,6 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_jzloss_p       = -1, &
           id_jhploss_n      = -1, &
           id_jhploss_p      = -1, &
-          id_jupswim_n      = -1, &
-          id_jupswim_p      = -1, &
           id_jingest_n      = -1, &
           id_jingest_p      = -1, &
           id_jingest_sio2   = -1, &
@@ -2105,35 +2101,6 @@ write (stdlogunit, generic_COBALT_nml)
     vardesc_temp = vardesc("jhploss_n_vmLgz","Vertically migrating large zooplankton nitrogen loss to higher predators layer integral",&
                            'h','L','s','mol N m-2 s-1','f')
     zoo(5)%id_jhploss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-    !
-    ! Register diagnostics for tracking zooplankton upward swimming
-    !
-
-    vardesc_temp = vardesc("jupswim_n_Smz","Small zooplankton nitrogen loss to upward swimming",&
-                           'h','L','s','mol kg m-3 s-1','f')
-    zoo(1)%id_jupswim_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-    vardesc_temp = vardesc("jupswim_n_Mdz","Medium zooplankton nitrogen loss to upward swimming",&
-                           'h','L','s','mol kg m-3 s-1','f')
-    zoo(2)%id_jupswim_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-    vardesc_temp = vardesc("jupswim_n_Lgz","Large zooplankton nitrogen loss to upward swimming",&
-                           'h','L','s','mol kg m-3 s-1','f')
-    zoo(3)%id_jupswim_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-    vardesc_temp = vardesc("jupswim_n_vmMdz","Vertically migrating medium zooplankton nitrogen loss to upward swimming",&
-                           'h','L','s','mol kg m-3 s-1','f')
-    zoo(4)%id_jupswim_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-    vardesc_temp = vardesc("jupswim_n_vmLgz","Vertically migrating large zooplankton nitrogen loss to upward swimming",&
-                           'h','L','s','mol kg m-3 s-1','f')
-    zoo(5)%id_jupswim_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
 	!
@@ -8210,23 +8177,11 @@ write (stdlogunit, generic_COBALT_nml)
 
        do n = 1, NUM_ZOO !{
 		   ! placeholder
-            zoo(n)%jupswim_n(i,j,k) = 0.0
-            zoo(n)%jupswim_p(i,j,k) = 0.0
             zoo(n)%p_vmove(i,j,k) = 0.0
           endif
        enddo !} n
 
     enddo; enddo; enddo  !} i,j,k
-
-    ! Sign convention for upward swimming is positive for
-    ! movement out of cell.  Multiply by -1 to establish a source in k = 1
-    do j = jsc, jec ; do i = isc, iec   !{
-       do n = 1,NUM_ZOO
-         zoo(n)%jupswim_n(i,j,1) = zoo(n)%jupswim_n(i,j,1)*-1.0
-         zoo(n)%jupswim_p(i,j,1) = zoo(n)%jupswim_p(i,j,1)*-1.0
-         zoo(n)%p_vmove(i,j,1) = 0.0
-       enddo
-    enddo; enddo !} i,j
 
 
     call mpp_clock_end(id_clock_other_losses)
@@ -8868,13 +8823,7 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_nlgz(i,j,k,tau) + cobalt%p_nvmmdz(i,j,k,tau) + &
                     cobalt%p_nvmlgz(i,j,k,tau))*grid_tmask(i,j,k)
          net_srcn(i,j,k) = (phyto(DIAZO)%juptake_n2(i,j,k) - cobalt%jno3denit_wc(i,j,k) - &
-                    cobalt%jprod_n2amx(i,j,k) + cobalt%jno3_iceberg(i,j,k) - &
-                    zoo(1)%jupswim_n(i,j,k) - zoo(2)%jupswim_n(i,j,k) - &
-                    zoo(3)%jupswim_n(i,j,k) - zoo(4)%jupswim_n(i,j,k) - &
-					zoo(5)%jupswim_n(i,j,k)) * dt*grid_tmask(i,j,k)
-         net_srcc(i,j,k) =  cobalt%c_2_n*(-1.0*zoo(1)%jupswim_n(i,j,k) - zoo(2)%jupswim_n(i,j,k) - &
-                    zoo(3)%jupswim_n(i,j,k) - zoo(4)%jupswim_n(i,j,k) - &
-					zoo(5)%jupswim_n(i,j,k)) * dt*grid_tmask(i,j,k) 
+                    cobalt%jprod_n2amx(i,j,k) + cobalt%jno3_iceberg(i,j,k)) * dt*grid_tmask(i,j,k)
          pre_totc(i,j,k) = (cobalt%p_dic(i,j,k,tau) + &
                     cobalt%p_cadet_arag(i,j,k,tau) + cobalt%p_cadet_calc(i,j,k,tau) + &
                     cobalt%c_2_n*(cobalt%p_ndi(i,j,k,tau) + cobalt%p_nlg(i,j,k,tau) + &
@@ -8895,9 +8844,7 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_nvmmdz(i,j,k,tau)*zoo(4)%q_p_2_n + &
                     cobalt%p_nvmlgz(i,j,k,tau)*zoo(5)%q_p_2_n + &
                     bact(1)%q_p_2_n*cobalt%p_nbact(i,j,k,tau))*grid_tmask(i,j,k)
-         net_srcp(i,j,k) = (cobalt%jpo4_iceberg(i,j,k) - zoo(1)%jupswim_p(i,j,k) - &
-                    zoo(2)%jupswim_p(i,j,k) - zoo(3)%jupswim_p(i,j,k) - &
-					zoo(4)%jupswim_p(i,j,k) - zoo(5)%jupswim_p(i,j,k))*dt*grid_tmask(i,j,k)
+         net_srcp(i,j,k) = cobalt%jpo4_iceberg(i,j,k)*dt*grid_tmask(i,j,k)
          pre_totfe(i,j,k) = (cobalt%p_fed(i,j,k,tau) + cobalt%p_fedi(i,j,k,tau) + &
                     cobalt%p_felg(i,j,k,tau) + cobalt%p_fesm(i,j,k,tau) + &
                     cobalt%p_fedet(i,j,k,tau))*grid_tmask(i,j,k)
@@ -9002,31 +8949,31 @@ write (stdlogunit, generic_COBALT_nml)
        ! Small zooplankton
        !
        cobalt%jnsmz(i,j,k) = zoo(1)%jprod_n(i,j,k) - zoo(1)%jzloss_n(i,j,k) - &
-                             zoo(1)%jhploss_n(i,j,k) - zoo(1)%jupswim_n(i,j,k)
+                             zoo(1)%jhploss_n(i,j,k)
        cobalt%p_nsmz(i,j,k,tau) = cobalt%p_nsmz(i,j,k,tau) + cobalt%jnsmz(i,j,k)*dt*grid_tmask(i,j,k)
        !
        ! Medium zooplankton
        !
        cobalt%jnmdz(i,j,k) = zoo(2)%jprod_n(i,j,k) - zoo(2)%jzloss_n(i,j,k) - &
-                             zoo(2)%jhploss_n(i,j,k) - zoo(2)%jupswim_n(i,j,k)
+                             zoo(2)%jhploss_n(i,j,k)
        cobalt%p_nmdz(i,j,k,tau) = cobalt%p_nmdz(i,j,k,tau) + cobalt%jnmdz(i,j,k)*dt*grid_tmask(i,j,k)
        !
        ! Large zooplankton
        !
        cobalt%jnlgz(i,j,k) = zoo(3)%jprod_n(i,j,k) - zoo(3)%jzloss_n(i,j,k) - &
-                             zoo(3)%jhploss_n(i,j,k) - zoo(3)%jupswim_n(i,j,k)
+                             zoo(3)%jhploss_n(i,j,k)
        cobalt%p_nlgz(i,j,k,tau) = cobalt%p_nlgz(i,j,k,tau) + cobalt%jnlgz(i,j,k)*dt*grid_tmask(i,j,k)
        !
        ! Vertically migrating medium zooplankton
        !
        cobalt%jnvmmdz(i,j,k) = zoo(4)%jprod_n(i,j,k) - zoo(4)%jzloss_n(i,j,k) - &
-                             zoo(4)%jhploss_n(i,j,k) - zoo(4)%jupswim_n(i,j,k)
+                             zoo(4)%jhploss_n(i,j,k)
        cobalt%p_nvmmdz(i,j,k,tau) = cobalt%p_nvmmdz(i,j,k,tau) + cobalt%jnvmmdz(i,j,k)*dt*grid_tmask(i,j,k)
        !
        ! Vertically migrating large zooplankton
        !
        cobalt%jnvmlgz(i,j,k) = zoo(5)%jprod_n(i,j,k) - zoo(5)%jzloss_n(i,j,k) - &
-                             zoo(5)%jhploss_n(i,j,k) - zoo(5)%jupswim_n(i,j,k)
+                             zoo(5)%jhploss_n(i,j,k)
        cobalt%p_nvmlgz(i,j,k,tau) = cobalt%p_nvmlgz(i,j,k,tau) + cobalt%jnvmlgz(i,j,k)*dt*grid_tmask(i,j,k)
     enddo; enddo ; enddo  !} i,j,k
 !
@@ -10360,10 +10307,6 @@ write (stdlogunit, generic_COBALT_nml)
             used = g_send_data(zoo(n)%id_jhploss_n, zoo(n)%jhploss_n*rho_dzt,           &
             model_time, rmask = grid_tmask,&
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-       if (zoo(n)%id_jupswim_n .gt. 0)          &
-            used = g_send_data(zoo(n)%id_jupswim_n, zoo(n)%jupswim_n,           &
-            model_time, rmask = grid_tmask,&
-            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)	   
        if (zoo(n)%id_jingest_n .gt. 0)          &
             used = g_send_data(zoo(n)%id_jingest_n, zoo(n)%jingest_n*rho_dzt,           &
             model_time, rmask = grid_tmask,&
@@ -13262,8 +13205,6 @@ write (stdlogunit, generic_COBALT_nml)
        allocate(zoo(n)%jzloss_p(isd:ied,jsd:jed,nk))      ; zoo(n)%jzloss_p       = 0.0
        allocate(zoo(n)%jhploss_n(isd:ied,jsd:jed,nk))     ; zoo(n)%jhploss_n      = 0.0
        allocate(zoo(n)%jhploss_p(isd:ied,jsd:jed,nk))     ; zoo(n)%jhploss_p      = 0.0
-       allocate(zoo(n)%jupswim_n(isd:ied,jsd:jed,nk))     ; zoo(n)%jupswim_n      = 0.0
-       allocate(zoo(n)%jupswim_p(isd:ied,jsd:jed,nk))     ; zoo(n)%jupswim_p      = 0.0
        allocate(zoo(n)%jingest_n(isd:ied,jsd:jed,nk))     ; zoo(n)%jingest_n      = 0.0
        allocate(zoo(n)%jingest_p(isd:ied,jsd:jed,nk))     ; zoo(n)%jingest_p      = 0.0
        allocate(zoo(n)%jingest_sio2(isd:ied,jsd:jed,nk))  ; zoo(n)%jingest_sio2   = 0.0
@@ -13756,8 +13697,6 @@ write (stdlogunit, generic_COBALT_nml)
        deallocate(zoo(n)%jzloss_p)
        deallocate(zoo(n)%jhploss_n)
        deallocate(zoo(n)%jhploss_p)
-       deallocate(zoo(n)%jupswim_n)
-       deallocate(zoo(n)%jupswim_p)
        deallocate(zoo(n)%jingest_n)
        deallocate(zoo(n)%jingest_p)
        deallocate(zoo(n)%jingest_sio2)
