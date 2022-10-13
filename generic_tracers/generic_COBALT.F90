@@ -368,13 +368,16 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
 
   type zooplankton
     real ::  &
-      imax,             & ! maximum ingestion rate (sec-1)
+          imax,             & ! maximum ingestion rate (sec-1)
           ki,               & ! half-sat for ingestion (moles N m-3)
           gge_max,          & ! max gross growth efficiciency (approached as i >> bresp, dimensionless)
           nswitch,          & ! switching parameter (dimensionless)
           mswitch,          & ! switching parameter (dimensionless)
           bresp,            & ! basal respiration rate (sec-1)
           ktemp,            & ! temperature dependence of zooplankton rates (C-1)
+          swim_max,         & ! maximum swimming speed for vertical migration, positive downwards (m sec-1)
+          dvm_I_thresh,     & ! irradiance threshold for DVM swimming (watts m-2)
+          k_I_dvm,          & ! irradiance scaling for DVM swimming (watts m-2)
           phi_det,          & ! fraction of ingested N to detritus
           phi_ldon,         & ! fraction of ingested N/P to labile don
           phi_sldon,        & ! fraction of ingested N/P to semi-labile don
@@ -5881,21 +5884,42 @@ write (stdlogunit, generic_COBALT_nml)
     ! Zooplankton ingestion parameterization and temperature dependence
     !-----------------------------------------------------------------------
     !
-    call g_tracer_add_param('imax_smz',zoo(1)%imax, 0.9*1.42 / sperd)              ! s-1
+    call g_tracer_add_param('imax_smz',zoo(1)%imax, 0.9*1.42 / sperd)          ! s-1
     call g_tracer_add_param('imax_mdz',zoo(2)%imax, 0.57 / sperd)              ! s-1
     call g_tracer_add_param('imax_lgz',zoo(3)%imax, 0.23 / sperd)              ! s-1
-    call g_tracer_add_param('imax_vmmdz',zoo(4)%imax, 0.57 / sperd)              ! s-1
-    call g_tracer_add_param('imax_vmlgz',zoo(5)%imax, 0.23 / sperd)              ! s-1
+    call g_tracer_add_param('imax_vmmdz',zoo(4)%imax, 0.57 / sperd)            ! s-1
+    call g_tracer_add_param('imax_vmlgz',zoo(5)%imax, 0.23 / sperd)            ! s-1
     call g_tracer_add_param('ki_smz',zoo(1)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ki_mdz',zoo(2)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ki_lgz',zoo(3)%ki, 1.25e-6)                       ! moles N kg-1
-    call g_tracer_add_param('ki_vmmdz',zoo(4)%ki, 1.25e-6)                       ! moles N kg-1
-    call g_tracer_add_param('ki_vmlgz',zoo(5)%ki, 1.25e-6)                       ! moles N kg-1
+    call g_tracer_add_param('ki_vmmdz',zoo(4)%ki, 1.25e-6)                     ! moles N kg-1
+    call g_tracer_add_param('ki_vmlgz',zoo(5)%ki, 1.25e-6)                     ! moles N kg-1
     call g_tracer_add_param('ktemp_smz',zoo(1)%ktemp, 0.063)                   ! C-1
     call g_tracer_add_param('ktemp_mdz',zoo(2)%ktemp, 0.063)                   ! C-1
     call g_tracer_add_param('ktemp_lgz',zoo(3)%ktemp, 0.063)                   ! C-1
-    call g_tracer_add_param('ktemp_vmmdz',zoo(4)%ktemp, 0.063)                   ! C-1
-    call g_tracer_add_param('ktemp_vmlgz',zoo(5)%ktemp, 0.063)                   ! C-1
+    call g_tracer_add_param('ktemp_vmmdz',zoo(4)%ktemp, 0.063)                 ! C-1
+    call g_tracer_add_param('ktemp_vmlgz',zoo(5)%ktemp, 0.063)                 ! C-1
+    !
+    !-----------------------------------------------------------------------
+    ! Zooplankton vertical migration parameters
+    !-----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('dvm_I_thresh_smz',zoo(1)%dvm_I_thresh, 0.001)        ! W m-2
+    call g_tracer_add_param('dvm_I_thresh_mdz',zoo(2)%dvm_I_thresh, 0.001)        ! W m-2
+    call g_tracer_add_param('dvm_I_thresh_lgz',zoo(3)%dvm_I_thresh, 0.001)        ! W m-2
+    call g_tracer_add_param('dvm_I_thresh_vmmdz',zoo(4)%dvm_I_thresh, 0.001)      ! W m-2
+    call g_tracer_add_param('dvm_I_thresh_vmlgz',zoo(5)%dvm_I_thresh, 0.001)      ! W m-2
+    call g_tracer_add_param('swim_max_smz',zoo(1)%swim_max, 0.0)                  ! m s-1
+    call g_tracer_add_param('swim_max_mdz',zoo(2)%swim_max, 0.0)                  ! m s-1
+    call g_tracer_add_param('swim_max_lgz',zoo(3)%swim_max, 0.0)                  ! m s-1
+    call g_tracer_add_param('swim_max_vmmdz',zoo(4)%swim_max, 0.025)              ! m s-1
+    call g_tracer_add_param('swim_max_vmlgz',zoo(5)%swim_max, 0.03)               ! m s-1
+    call g_tracer_add_param('k_I_dvm_smz',zoo(1)%k_I_dvm, 0.1)        ! W m-2
+    call g_tracer_add_param('k_I_dvm_mdz',zoo(2)%k_I_dvm, 0.1)        ! W m-2
+    call g_tracer_add_param('k_I_dvm_lgz',zoo(3)%k_I_dvm, 0.1)        ! W m-2
+    call g_tracer_add_param('k_I_dvm_vmmdz',zoo(4)%k_I_dvm, 0.1)      ! W m-2
+    call g_tracer_add_param('k_I_dvm_vmlgz',zoo(5)%k_I_dvm, 0.1)      ! W m-2
+
     !
     !-----------------------------------------------------------------------
     ! Bacterial growth and uptake parameters
@@ -8175,10 +8199,18 @@ write (stdlogunit, generic_COBALT_nml)
        ! 3.2.4 Movement due to swimming
        !
 
-       do n = 1, NUM_ZOO !{
-		   ! placeholder
-            zoo(n)%p_vmove(i,j,k) = 0.0
-          endif
+       do n = 2, NUM_ZOO !{
+            ! placeholder
+            if ( cobalt%irr_inst(i,j,k) .lt. zoo(n)%dvm_I_thresh ) then
+                    zoo(n)%p_vmove(i,j,k) = -zoo(n)%swim_max * 1.0 - ( cobalt%irr_inst(i,j,k) / &
+                                            (zoo(n)%k_I_dvm + cobalt%irr_inst(i,j,k)) )
+            endif
+            
+            if ( cobalt%irr_inst(i,j,k) .gt. zoo(n)%dvm_I_thresh ) then
+                    zoo(n)%p_vmove(i,j,k) = zoo(n)%swim_max  * 1.0 - ( cobalt%irr_inst(i,j,k) / &
+                                            (zoo(n)%k_I_dvm + cobalt%irr_inst(i,j,k)) )
+            endif
+
        enddo !} n
 
     enddo; enddo; enddo  !} i,j,k
