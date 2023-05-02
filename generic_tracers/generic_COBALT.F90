@@ -8066,7 +8066,7 @@ write (stdlogunit, generic_COBALT_nml)
              cobalt%fpdet_burial(i,j) = cobalt%frac_burial(i,j)*cobalt%f_pdet_btf(i,j,1)
              ! fpoc_bottom in micromoles C cm-2 day-1 for denitrification relationship, cap at 43
              ! to prevent anomalous extrapolation of the relationship
-             log_fpoc_btm = log(min(43.0,0.1*fpoc_btm))
+             log_fpoc_btm = log10(min(43.0,0.1*fpoc_btm))
              cobalt%fno3denit_sed(i,j) = min(cobalt%f_no3(i,j,k)*cobalt%Rho_0*r_dt,  &      
                   min((cobalt%f_ndet_btf(i,j,1)-cobalt%fndet_burial(i,j))*cobalt%n_2_n_denit, & 
                   10.0**(-0.9543+0.7662*log_fpoc_btm - 0.235*log_fpoc_btm**2.0)/(cobalt%c_2_n*sperd*100.0)* &
