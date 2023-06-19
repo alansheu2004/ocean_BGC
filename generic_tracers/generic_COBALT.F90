@@ -368,7 +368,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
 
   type zooplankton
     real ::  &
-	  imax,             & ! maximum ingestion rate (sec-1)         
+     	  imax,             & ! maximum ingestion rate (sec-1)         
           ki,               & ! half-sat for ingestion (moles N m-3)
           gge_max,          & ! max gross growth efficiciency (approached as i >> bresp, dimensionless)
           nswitch,          & ! switching parameter (dimensionless)
@@ -388,6 +388,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           ipa_smp,          & ! innate prey availability of low-light adapt. small phytos 
           ipa_lgp,          & ! innate prey availability of large phytoplankton
           ipa_diaz,         & ! innate prey availability of diazotrophs 
+          ipa_mx,         & ! innate prey availability of diazotrophs 
           ipa_smz,          & ! innate prey availability of small zooplankton
           ipa_mdz,          & ! innate prey availability of large zooplankton
           ipa_lgz,          & ! innate prey availability of x-large zooplankton
@@ -465,6 +466,210 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_f_n_100        = -1
   end type zooplankton
 
+  type mixotroph
+     real :: alpha,      &			
+          fe_2_n_max,    &
+          p_2_n_static,  &
+          k_fe_2_n,      &
+          k_fed,         &
+          k_nh4,         &
+          k_no3,         &
+          k_po4,         &
+          P_C_max,       &
+          thetamax,      &     
+          bresp,         &
+          agg,           &
+          frac_mu_agg,   &
+          vir,           &            
+          exu,           &
+     	  imax,             & ! maximum ingestion rate (sec-1)         
+          ki,               & ! half-sat for ingestion (moles N m-3)
+          gge_max,          & ! max gross growth efficiciency (approached as i >> bresp, dimensionless)
+          nswitch,          & ! switching parameter (dimensionless)
+          mswitch,          & ! switching parameter (dimensionless)
+          ktemp,            & ! temperature dependence of zooplankton rates (C-1)
+          phi_det,          & ! fraction of ingested N to detritus
+          phi_ldon,         & ! fraction of ingested N/P to labile don
+          phi_sldon,        & ! fraction of ingested N/P to semi-labile don
+          phi_srdon,        & ! fraction of ingested N/P to semi-refractory don
+          phi_ldop,         & ! fraction of ingested N/P to labile dop
+          phi_sldop,        & ! fraction of ingested N/P to semi-labile dop
+          phi_srdop,        & ! fraction of ingested N/P to semi-refractory dop 
+          phi_nh4,          & ! fraction of ingested N to nh4 due to ingestion-related metabolism
+          phi_po4,	    & ! fraction of ingested N to po4 due to ingestion-related metabolism
+          q_p_2_n,          & ! p:n ratio of zooplankton
+          ipa_smp,          & ! innate prey availability of low-light adapt. small phytos 
+          ipa_lgp,          & ! innate prey availability of large phytoplankton
+          ipa_diaz,         & ! innate prey availability of diazotrophs 
+          ipa_mx,         & ! innate prey availability of diazotrophs 
+          ipa_smz,          & ! innate prey availability of small zooplankton
+          ipa_mdz,          & ! innate prey availability of large zooplankton
+          ipa_lgz,          & ! innate prey availability of x-large zooplankton
+          ipa_det,          & ! innate prey availability of detritus
+          ipa_bact            ! innate prey availability for bacteria
+     real, ALLOCATABLE, dimension(:,:)  :: &
+          jprod_n_100,      & 
+          jprod_n_new_100,  & 
+          jzloss_n_100,     &
+          jaggloss_n_100,   &
+          jvirloss_n_100,   &
+          jexuloss_n_100,   &
+          f_n_100,          &
+          juptake_fe_100,   &
+          juptake_po4_100,  &
+          nlim_bw_100,      &
+          plim_bw_100,      &
+          def_fe_bw_100,    &
+          irrlim_bw_100,    &        
+          jingest_n_100,    &
+          jhploss_n_100,    &
+          jprod_ndet_100,   &
+          jprod_don_100,    &
+          jremin_n_100
+     real, ALLOCATABLE, dimension(:,:,:)  :: &
+          def_fe      , & 
+          def_p       , & 
+          f_fe        , & 
+          f_n         , & 
+          felim       , & 
+          irrlim      , & 
+          jzloss_fe   , & 
+          jzloss_n    , & 
+          jzloss_p    , & 
+          jaggloss_fe , &  
+          jaggloss_n  , & 
+          jaggloss_p  , &
+          agg_lim      ,& 
+          jvirloss_fe , & 
+          jvirloss_n  , & 
+          jvirloss_p  , & 
+          jexuloss_fe , &
+          jexuloss_n  , &
+          jexuloss_p  , &
+          jhploss_fe  , & 
+          jhploss_n   , &
+          jhploss_p   , & 
+          juptake_fe  , & 
+          juptake_nh4 , & 
+          juptake_no3 , & 
+          juptake_po4 , & 
+          jprod_n     , & 
+          liebig_lim  , & 
+          mu          , &
+          f_mu_mem    , &
+          mu_mix      , & 
+          nh4lim      , & 
+          no3lim      , & 
+          po4lim      , &
+          o2lim       , & 
+          q_fe_2_n    , & 
+          q_p_2_n     , & 
+          theta       , &
+          jingest_n,        & ! Total ingestion of n
+          jingest_p,        & ! Total ingestion of p
+          jingest_sio2,     & ! Total ingestion of silicate
+          jingest_fe,	    & ! Total ingestion of iron
+          jprod_ndet,       & ! production of nitrogen detritus by zooplankton group 
+          jprod_pdet,       & ! production of phosphorous detritus by zooplankton group
+          jprod_ldon,       & ! production of labile dissolved organic N by zooplankton group
+          jprod_ldop,       & ! production of labile dissolved organic P by zooplankton group
+          jprod_srdon,      & ! production of semi-refractory dissolved organic N by zooplankton group
+          jprod_srdop,      & ! production of semi-refractory dissolved organic P by zooplankton group 
+          jprod_sldon,      & ! production of semi-labile dissolved organic N by zooplankton group
+          jprod_sldop,      & ! production of semi-labile dissolved organic P by zooplankton group
+          jprod_fed,	    & ! production of dissolved iron
+          jprod_fedet,      & ! production of iron detritus
+          jprod_sidet,	    & ! production of silica detritus
+          jprod_sio4,       & ! production of silicate via rapid dissolution at surface
+          jprod_po4,        & ! phosphate production by zooplankton
+          jprod_nh4,        & ! ammonia production by zooplankton
+          jprod_n,          & ! zooplankton production
+          temp_lim            ! Temperature limitation
+		              
+     integer ::            &
+          id_def_fe       = -1, & 
+          id_def_p        = -1, &
+          id_felim        = -1, &
+          id_irrlim       = -1, &
+          id_jzloss_fe    = -1, &
+          id_jzloss_n     = -1, & 
+          id_jzloss_p     = -1, & 
+          id_jaggloss_fe  = -1, &
+          id_jaggloss_n   = -1, &
+          id_jaggloss_p   = -1, &
+          id_agg_lim      = -1, & 
+          id_jvirloss_fe  = -1, & 
+          id_jvirloss_n   = -1, &
+          id_jvirloss_p   = -1, &
+          id_jexuloss_n   = -1, &
+          id_jexuloss_p   = -1, &
+          id_jexuloss_fe  = -1, &
+          id_jhploss_fe   = -1, & 
+          id_jhploss_n    = -1, & 
+          id_jhploss_p    = -1, &
+          id_juptake_fe   = -1, &
+          id_juptake_nh4  = -1, &
+          id_juptake_no3  = -1, & 
+          id_juptake_po4  = -1, &
+          id_jprod_n      = -1, & 
+          id_liebig_lim   = -1, &
+          id_mu           = -1, &
+          id_f_mu_mem     = -1, &
+          id_mu_mix       = -1, &
+          id_nh4lim       = -1, &
+          id_no3lim       = -1, &
+          id_po4lim       = -1, &
+          id_o2lim        = -1, &
+          id_q_fe_2_n     = -1, &
+          id_q_p_2_n      = -1, &
+          id_theta        = -1, &
+          id_f_n_100          = -1, &
+          id_sfc_f_n          = -1, &
+          id_sfc_chl          = -1, &
+          id_sfc_def_fe       = -1, &
+          id_sfc_felim        = -1, &
+          id_sfc_q_fe_2_n     = -1, &
+          id_sfc_nh4lim       = -1, &
+          id_sfc_no3lim       = -1, &
+          id_sfc_po4lim       = -1, &
+          id_sfc_irrlim       = -1, &
+          id_sfc_theta        = -1, &
+          id_sfc_mu           = -1, &
+          id_jingest_n      = -1, &
+          id_jingest_p      = -1, &
+          id_jingest_sio2   = -1, &
+          id_jingest_fe     = -1, &
+          id_jprod_ndet     = -1, &
+          id_jprod_pdet     = -1, &
+          id_jprod_ldon     = -1, &
+          id_jprod_ldop     = -1, &
+          id_jprod_srdon    = -1, &
+          id_jprod_srdop    = -1, &
+          id_jprod_sldon    = -1, &
+          id_jprod_sldop    = -1, &
+          id_jprod_fed      = -1, &
+          id_jprod_fedet    = -1, &
+          id_jprod_sidet    = -1, &
+          id_jprod_sio4     = -1, &
+          id_jprod_po4      = -1, &
+          id_jprod_nh4      = -1, &
+          id_temp_lim       = -1, &
+          id_jprod_n_100  = -1, &
+          id_jprod_n_new_100  = -1, &     
+          id_jprod_n_n2_100 = -1, &
+          id_jzloss_n_100     = -1, &
+          id_jaggloss_n_100   = -1, &
+          id_jvirloss_n_100   = -1, &
+          id_jexuloss_n_100   = -1, &
+          id_jingest_n_100  = -1, &
+          id_jhploss_n_100  = -1, &
+          id_jprod_ndet_100 = -1, &
+          id_jprod_don_100  = -1, &
+          id_jremin_n_100   = -1, &
+          id_f_n_100        = -1
+		  
+  end type mixotroph
+  
   type bacteria
     real ::  &
           mu_max,           & ! maximum bacterial growth rate (sec-1)
@@ -534,10 +739,12 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
   ! define three zooplankton types
   integer, parameter :: NUM_ZOO = 3
   type(zooplankton), dimension(NUM_ZOO) :: zoo
+	  
+  type(mixotroph), dimension(1) :: mixo
 
   type(bacteria), dimension(1) :: bact
 
-  integer, parameter :: NUM_PREY = 8
+  integer, parameter :: NUM_PREY = 9
 
   type generic_COBALT_type
 
@@ -5300,6 +5507,21 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('fe_2_n_upt_fac', cobalt%fe_2_n_upt_fac, 15.0e-6)               ! mol Fe mol N-1
     !
     !-----------------------------------------------------------------------
+    ! Mixotroph Autotrophy Parameters: Nutrient Limitation & Photosynthesis  
+    !-----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('k_fed_mx', mixo(1)%k_fed,  1.0e-10)                 ! mol Fed kg-1
+    call g_tracer_add_param('k_nh4_mx', mixo(1)%k_nh4,  k_nh4_small)                  ! mol NH4 kg-1
+    call g_tracer_add_param('k_no3_mx', mixo(1)%k_no3,  k_no3_small)                  ! mol NO3 kg-1
+    call g_tracer_add_param('k_po4_mx', mixo(1)%k_po4,  1.0e-8)                  ! mol PO4 kg-1
+    call g_tracer_add_param('k_fe_2_n_mx',mixo(1)%k_fe_2_n, 3.0e-6*106.0/16.0)        ! mol Fe mol N-1
+    call g_tracer_add_param('fe_2_n_max_mx',mixo(1)%fe_2_n_max, 50.e-6*106.0/16.0)     ! mol Fe mol N-1
+    call g_tracer_add_param('alpha_mx', mixo(1)%alpha,  2.4e-5*2.77e18/6.022e17)      ! g C g Chl-1 m-2 J-1
+    call g_tracer_add_param('P_C_max_mx', mixo(1)%P_C_max, 1.25/sperd)               ! s-1
+    call g_tracer_add_param('bresp_mx', mixo(1)%bresp,0.03/sperd)                     ! sec-1 
+    call g_tracer_add_param('p_2_n_static_mx', mixo(1)%p_2_n_static,1.0/20.0 )         ! mol P mol N-1
+    !
+    !-----------------------------------------------------------------------
     ! Phytoplankton light limitation/growth rate
     !-----------------------------------------------------------------------
     !
@@ -5393,6 +5615,15 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('exu_Lg',phyto(LARGE)%exu, 0.13)       ! dimensionless (fraction of NPP) 
     !
     !-----------------------------------------------------------------------
+    ! Mixotroph Autotrophic Losses: Aggregation, Viral Lysis, Exudation  
+    !-----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('agg_mx',mixo(1)%agg,0.1*1e6 / sperd)           ! s-1 (mole N kg)-1
+    call g_tracer_add_param('frac_mu_agg_mx',mixo(1)%frac_mu_agg,0.25)      ! none
+    call g_tracer_add_param('vir_mx',mixo(1)%vir, 0.20*1e6/sperd )  ! s-1 (mole N kg)-1
+    call g_tracer_add_param('exu_mx',mixo(1)%exu, 0.13) ! dimensionless (fraction of NPP)
+    !
+    !-----------------------------------------------------------------------
     ! Zooplankton ingestion parameterization and temperature dependence
     !-----------------------------------------------------------------------
     !
@@ -5407,6 +5638,16 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('ktemp_lgz',zoo(3)%ktemp, 0.063)                   ! C-1
     !
     !-----------------------------------------------------------------------
+    ! Mixotroph ingestion and bioenergetics
+    !-----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('imax_mx',mixo(1)%imax, 0.9*1.42 / sperd)              ! s-1
+    call g_tracer_add_param('ki_mx',mixo(1)%ki, 1.25e-6)                       ! moles N kg-1
+    call g_tracer_add_param('ktemp_mx',mixo(1)%ktemp, 0.063)                   ! C-1
+    call g_tracer_add_param('gge_max_mx',mixo(1)%gge_max, 0.4)                   ! dimensionless
+    call g_tracer_add_param('bresp_mx',mixo(1)%bresp, 0.9*0.020 / sperd)        ! s-1
+    !
+    !-----------------------------------------------------------------------
     ! Bacterial growth and uptake parameters
     !-----------------------------------------------------------------------
     !
@@ -5417,7 +5658,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('bresp_bact',bact(1)%bresp, 0.0075/sperd)          ! s-1
     !
     !-----------------------------------------------------------------------
-    ! Zooplankton switching and prey preference parameters
+    ! Zooplankton / Mixotroph switching and prey preference parameters
     !-----------------------------------------------------------------------
     !
     ! parameters controlling the extent of biomass-based switching between
@@ -5425,13 +5666,26 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('nswitch_smz',zoo(1)%nswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('nswitch_mdz',zoo(2)%nswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('nswitch_lgz',zoo(3)%nswitch, 2.0)          ! dimensionless
+    call g_tracer_add_param('nswitch_mx',mixo(1)%nswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_smz',zoo(1)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_mdz',zoo(2)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_lgz',zoo(3)%mswitch, 2.0)          ! dimensionless
+    call g_tracer_add_param('mswitch_mx',mixo(1)%mswitch, 2.0)          ! dimensionless
+    ! innate prey availability for small zooplankton 
+    call g_tracer_add_param('mx_ipa_smp',mixo(1)%ipa_smp, 0.25)    ! dimensionless
+    call g_tracer_add_param('mx_ipa_lgp',mixo(1)%ipa_lgp, 0.0)          ! dimensionless
+    call g_tracer_add_param('mx_ipa_diaz',mixo(1)%ipa_diaz,0.0)         ! dimensionless
+    call g_tracer_add_param('mx_ipa_mx',mixo(1)%ipa_mx,0.0)         ! dimensionless
+    call g_tracer_add_param('mx_ipa_smz',mixo(1)%ipa_smz, 0.0)          ! dimensionless
+    call g_tracer_add_param('mx_ipa_mdz',mixo(1)%ipa_mdz, 0.0)          ! dimensionless
+    call g_tracer_add_param('mx_ipa_lgz',mixo(1)%ipa_lgz, 0.0)          ! dimensionless
+    call g_tracer_add_param('mx_ipa_bact',mixo(1)%ipa_bact,1.0)         ! dimensionless
+    call g_tracer_add_param('mx_ipa_det',mixo(1)%ipa_det, 0.0)          ! dimensionless
     ! innate prey availability for small zooplankton 
     call g_tracer_add_param('smz_ipa_smp',zoo(1)%ipa_smp, 1.0)    ! dimensionless
     call g_tracer_add_param('smz_ipa_lgp',zoo(1)%ipa_lgp, 0.0)          ! dimensionless
     call g_tracer_add_param('smz_ipa_diaz',zoo(1)%ipa_diaz,0.0)         ! dimensionless
+    call g_tracer_add_param('smz_ipa_mx',zoo(1)%ipa_mx,0.0)         ! dimensionless
     call g_tracer_add_param('smz_ipa_smz',zoo(1)%ipa_smz, 0.0)          ! dimensionless
     call g_tracer_add_param('smz_ipa_mdz',zoo(1)%ipa_mdz, 0.0)          ! dimensionless
     call g_tracer_add_param('smz_ipa_lgz',zoo(1)%ipa_lgz, 0.0)          ! dimensionless
@@ -5441,6 +5695,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('mdz_ipa_smp',zoo(2)%ipa_smp, 0.0)    ! dimensionless
     call g_tracer_add_param('mdz_ipa_lgp',zoo(2)%ipa_lgp, 1.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_diaz',zoo(2)%ipa_diaz,1.0)         ! dimensionless
+    call g_tracer_add_param('mdz_ipa_mx',zoo(2)%ipa_mx,1.0)         ! dimensionless
     call g_tracer_add_param('mdz_ipa_smz',zoo(2)%ipa_smz, 1.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_mdz',zoo(2)%ipa_mdz, 0.0)          ! dimensionless
     call g_tracer_add_param('mdz_ipa_lgz',zoo(2)%ipa_lgz, 0.0)          ! dimensionless
@@ -5450,6 +5705,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('lgz_ipa_smp',zoo(3)%ipa_smp, 0.0)   ! dimensionless
     call g_tracer_add_param('lgz_ipa_lgp',zoo(3)%ipa_lgp, 1.0)         ! dimensionless
     call g_tracer_add_param('lgz_ipa_diaz',zoo(3)%ipa_diaz, 1.0)       ! dimensionless
+    call g_tracer_add_param('lgz_ipa_mx',zoo(3)%ipa_mx, 1.0)       ! dimensionless
     call g_tracer_add_param('lgz_ipa_smz',zoo(3)%ipa_smz, 0.0)         ! dimensionless
     call g_tracer_add_param('lgz_ipa_mdz',zoo(3)%ipa_mdz, 1.0)         ! dimensionless
     call g_tracer_add_param('lgz_ipa_lgz',zoo(3)%ipa_lgz, 0.0)         ! dimensionless
@@ -5507,6 +5763,20 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('phi_po4_lgz',zoo(3)%phi_po4, 0.30)            ! dimensionless
     !
     !----------------------------------------------------------------------
+    ! Partitioning of mixotroph ingestion and viral lysis to other compartments
+    !----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('phi_det_mx',mixo(1)%phi_det, 0.10)            ! dimensionless
+    call g_tracer_add_param('phi_ldon_mx',mixo(1)%phi_ldon, 0.7*0.20)    ! dimensionless
+    call g_tracer_add_param('phi_ldop_mx',mixo(1)%phi_ldop, 0.65*0.20)     ! dimensionless
+    call g_tracer_add_param('phi_srdon_mx',mixo(1)%phi_srdon, 0.1*0.20)    ! dimensionless
+    call g_tracer_add_param('phi_srdop_mx',mixo(1)%phi_srdop, 0.15*0.20)   ! dimensionless
+    call g_tracer_add_param('phi_sldon_mx',mixo(1)%phi_sldon, 0.2*0.20)    ! dimensionless
+    call g_tracer_add_param('phi_sldop_mx',mixo(1)%phi_sldop, 0.2*0.20)    ! dimensionless
+    call g_tracer_add_param('phi_nh4_mx',mixo(1)%phi_nh4, 0.30)            ! dimensionless
+    call g_tracer_add_param('phi_po4_mx',mixo(1)%phi_po4, 0.30)            ! dimensionless
+    !
+    !----------------------------------------------------------------------
     ! Partitioning of viral losses to various dissolved pools
     !----------------------------------------------------------------------
     !
@@ -5530,6 +5800,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('hp_ipa_smp',  cobalt%hp_ipa_smp, 0.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_lgp',  cobalt%hp_ipa_lgp, 0.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_diaz', cobalt%hp_ipa_diaz, 0.0)        ! dimensionless
+    call g_tracer_add_param('hp_ipa_mx',   cobalt%hp_ipa_mx, 0.0)        ! dimensionless
     call g_tracer_add_param('hp_ipa_smz',  cobalt%hp_ipa_smz, 0.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_mdz',  cobalt%hp_ipa_mdz, 1.0)         ! dimensionless
     call g_tracer_add_param('hp_ipa_lgz',  cobalt%hp_ipa_lgz, 1.0)         ! dimensionless
@@ -5791,6 +6062,14 @@ write (stdlogunit, generic_COBALT_nml)
          units      = 'mol/kg',     &
          prog       = .true.        )
     !
+    !       Mixotroph Fe
+    !
+    call g_tracer_add(tracer_list,package_name,&
+         name       = 'femx',       &
+         longname   = 'Mixotroph Iron', &
+         units      = 'mol/kg',     &
+         prog       = .true.        )
+    !
     !       LDON (Labile dissolved organic nitrogen)
     !
     call g_tracer_add(tracer_list,package_name,&
@@ -5879,6 +6158,15 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add(tracer_list,package_name,&
          name       = 'nsm',            &
          longname   = 'Small Phytoplankton Nitrogen', &
+         units      = 'mol/kg',         &
+         prog       = .true.            )
+    !
+    !       NMx (Nitrogen in Mixotrophs
+    !            5-15 um in diameter and having a fixed C:N:P ratio)
+    !
+    call g_tracer_add(tracer_list,package_name,&
+         name       = 'nmx',            &
+         longname   = 'Mixotroph Nitrogen', &
          units      = 'mol/kg',         &
          prog       = .true.            )
     !
@@ -12274,6 +12562,65 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(bact(1)%ldonlim(isd:ied,jsd:jed,nk))          ; bact(1)%ldonlim         = 0.0
     allocate(bact(1)%temp_lim(isd:ied,jsd:jed,nk))         ; bact(1)%temp_lim        = 0.0
     !
+    ! Allocate and initialize array elements for mixotrophs
+    !
+    allocate(mixo(1)%def_fe(isd:ied,jsd:jed,nk))       ; mixo(1)%def_fe         = 0.0
+    allocate(mixo(1)%def_p(isd:ied,jsd:jed,nk))        ; mixo(1)%def_p          = 0.0
+    allocate(mixo(1)%f_fe(isd:ied,jsd:jed,nk))         ; mixo(1)%f_fe           = 0.0
+    allocate(mixo(1)%f_n(isd:ied,jsd:jed,nk))          ; mixo(1)%f_n            = 0.0
+    allocate(mixo(1)%felim(isd:ied,jsd:jed,nk))        ; mixo(1)%felim          = 0.0
+    allocate(mixo(1)%irrlim(isd:ied,jsd:jed,nk))       ; mixo(1)%irrlim         = 0.0
+    allocate(mixo(1)%jzloss_fe(isd:ied,jsd:jed,nk))    ; mixo(1)%jzloss_fe      = 0.0
+    allocate(mixo(1)%jzloss_n(isd:ied,jsd:jed,nk))     ; mixo(1)%jzloss_n       = 0.0
+    allocate(mixo(1)%jzloss_p(isd:ied,jsd:jed,nk))     ; mixo(1)%jzloss_p       = 0.0
+    allocate(mixo(1)%jaggloss_fe(isd:ied,jsd:jed,nk))  ; mixo(1)%jaggloss_fe    = 0.0
+    allocate(mixo(1)%jaggloss_n(isd:ied,jsd:jed,nk))   ; mixo(1)%jaggloss_n     = 0.0
+    allocate(mixo(1)%jaggloss_p(isd:ied,jsd:jed,nk))   ; mixo(1)%jaggloss_p     = 0.0
+    allocate(mixo(1)%jvirloss_fe(isd:ied,jsd:jed,nk))  ; mixo(1)%jvirloss_fe    = 0.0
+    allocate(mixo(1)%jvirloss_n(isd:ied,jsd:jed,nk))   ; mixo(1)%jvirloss_n     = 0.0
+    allocate(mixo(1)%jvirloss_p(isd:ied,jsd:jed,nk))   ; mixo(1)%jvirloss_p     = 0.0
+    allocate(mixo(1)%jexuloss_fe(isd:ied,jsd:jed,nk))  ; mixo(1)%jexuloss_fe    = 0.0
+    allocate(mixo(1)%jexuloss_n(isd:ied,jsd:jed,nk))   ; mixo(1)%jexuloss_n     = 0.0
+    allocate(mixo(1)%jexuloss_p(isd:ied,jsd:jed,nk))   ; mixo(1)%jexuloss_p     = 0.0
+    allocate(mixo(1)%juptake_fe(isd:ied,jsd:jed,nk))   ; mixo(1)%juptake_fe     = 0.0
+    allocate(mixo(1)%juptake_nh4(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_nh4    = 0.0
+    allocate(mixo(1)%juptake_no3(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_no3    = 0.0
+    allocate(mixo(1)%juptake_po4(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_po4    = 0.0
+    allocate(mixo(1)%jprod_n(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n        = 0.0
+    allocate(mixo(1)%liebig_lim(isd:ied,jsd:jed,nk))   ; mixo(1)%liebig_lim     = 0.0
+    allocate(mixo(1)%mu(isd:ied,jsd:jed,nk))           ; mixo(1)%mu             = 0.0
+    allocate(mixo(1)%po4lim(isd:ied,jsd:jed,nk))       ; mixo(1)%po4lim         = 0.0
+    allocate(mixo(1)%q_fe_2_n(isd:ied,jsd:jed,nk))     ; mixo(1)%q_fe_2_n       = 0.0
+    allocate(mixo(1)%q_p_2_n(isd:ied,jsd:jed,nk))      ; mixo(1)%q_p_2_n        = 0.0
+    allocate(mixo(1)%theta(isd:ied,jsd:jed,nk))        ; mixo(1)%theta          = 0.0
+    allocate(mixo(1)%f_mu_mem(isd:ied,jsd:jed,nk))     ; mixo(1)%f_mu_mem       = 0.0
+    allocate(mixo(1)%mu_mix(isd:ied,jsd:jed,nk))       ; mixo(1)%mu_mix         = 0.0
+    allocate(mixo(1)%agg_lim(isd:ied,jsd:jed,nk))      ; mixo(1)%agg_lim        = 0.0
+    allocate(mixo(1)%nh4lim(isd:ied,jsd:jed,nk))       ; mixo(1)%nh4lim         = 0.0
+    allocate(mixo(1)%no3lim(isd:ied,jsd:jed,nk))       ; mixo(1)%no3lim         = 0.0
+    allocate(mixo(1)%jingest_n(isd:ied,jsd:jed,nk))     ; mixo(1)%jingest_n      = 0.0
+    allocate(mixo(1)%jingest_p(isd:ied,jsd:jed,nk))     ; mixo(1)%jingest_p      = 0.0
+    allocate(mixo(1)%jingest_sio2(isd:ied,jsd:jed,nk))  ; mixo(1)%jingest_sio2   = 0.0
+    allocate(mixo(1)%jingest_fe(isd:ied,jsd:jed,nk))    ; mixo(1)%jingest_fe     = 0.0
+    allocate(mixo(1)%jprod_fed(isd:ied,jsd:jed,nk))     ; mixo(1)%jprod_fed      = 0.0
+    allocate(mixo(1)%jprod_fedet(isd:ied,jsd:jed,nk))   ; mixo(1)%jprod_fedet    = 0.0
+    allocate(mixo(1)%jprod_ndet(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_ndet     = 0.0
+    allocate(mixo(1)%jprod_pdet(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_pdet     = 0.0
+    allocate(mixo(1)%jprod_ldon(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_ldon     = 0.0
+    allocate(mixo(1)%jprod_ldop(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_ldop     = 0.0
+    allocate(mixo(1)%jprod_srdon(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_srdon   = 0.0
+    allocate(mixo(1)%jprod_srdop(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_srdop   = 0.0
+    allocate(mixo(1)%jprod_sldon(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_sldon   = 0.0
+    allocate(mixo(1)%jprod_sldop(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_sldop   = 0.0
+    allocate(mixo(1)%jprod_sidet(isd:ied,jsd:jed,nk))   ; mixo(1)%jprod_sidet    = 0.0
+    allocate(mixo(1)%jprod_sio4(isd:ied,jsd:jed,nk))   ; mixo(1)%jprod_sio4      = 0.0
+    allocate(mixo(1)%jprod_po4(isd:ied,jsd:jed,nk))     ; mixo(1)%jprod_po4      = 0.0
+    allocate(mixo(1)%jprod_nh4(isd:ied,jsd:jed,nk))     ; mixo(1)%jprod_nh4      = 0.0
+    allocate(mixo(1)%jprod_n(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n         = 0.0
+    allocate(mixo(1)%o2lim(isd:ied,jsd:jed,nk))        ; mixo(1)%o2lim           = 0.0
+    allocate(mixo(1)%temp_lim(isd:ied,jsd:jed,nk))      ; mixo(1)%temp_lim       = 0.0
+		
+    !
     ! CAS: allocate and initialize array elements for all zooplankton groups
     !
     do n = 1, NUM_ZOO
@@ -12576,6 +12923,25 @@ write (stdlogunit, generic_COBALT_nml)
        allocate(zoo(n)%jprod_ndet_100(isd:ied,jsd:jed))   ; zoo(n)%jprod_ndet_100    = 0.0
    enddo
 
+   allocate(mixo(1)%jprod_n_100(isd:ied,jsd:jed))      ; mixo(1)%jprod_n_100      = 0.0
+   allocate(mixo(1)%jprod_n_new_100(isd:ied,jsd:jed))  ; mixo(1)%jprod_n_new_100  = 0.0
+   allocate(mixo(1)%jzloss_n_100(isd:ied,jsd:jed))     ; mixo(1)%jzloss_n_100  = 0.0
+   allocate(mixo(1)%jexuloss_n_100(isd:ied,jsd:jed))   ; mixo(1)%jexuloss_n_100  = 0.0
+   allocate(mixo(1)%f_n_100(isd:ied,jsd:jed))          ; mixo(1)%f_n_100  = 0.0
+   allocate(mixo(1)%juptake_fe_100(isd:ied,jsd:jed))   ; mixo(1)%juptake_fe_100  = 0.0
+   allocate(mixo(1)%juptake_po4_100(isd:ied,jsd:jed))  ; mixo(1)%juptake_po4_100  = 0.0
+   allocate(mixo(1)%jvirloss_n_100(isd:ied,jsd:jed))   ; mixo(1)%jvirloss_n_100 = 0.0
+   allocate(mixo(1)%jaggloss_n_100(isd:ied,jsd:jed))   ; mixo(1)%jaggloss_n_100 = 0.0
+   ! Biomass-weighted limitation terms (for cmip)
+   allocate(mixo(1)%nlim_bw_100(isd:ied,jsd:jed))      ; mixo(1)%nlim_bw_100 = 0.0
+   allocate(mixo(1)%plim_bw_100(isd:ied,jsd:jed))      ; mixo(1)%plim_bw_100 = 0.0
+   allocate(mixo(1)%irrlim_bw_100(isd:ied,jsd:jed))    ; mixo(1)%irrlim_bw_100 = 0.0
+   allocate(mixo(1)%def_fe_bw_100(isd:ied,jsd:jed))    ; mixo(1)%def_fe_bw_100 = 0.0
+   allocate(mixo(1)%jingest_n_100(isd:ied,jsd:jed))    ; mixo(1)%jingest_n_100    = 0.0
+   allocate(mixo(1)%jremin_n_100(isd:ied,jsd:jed))     ; mixo(1)%jremin_n_100     = 0.0
+   allocate(mixo(1)%jprod_don_100(isd:ied,jsd:jed))    ; mixo(1)%jprod_don_100    = 0.0
+
+
    allocate(cobalt%hp_jingest_n_100(isd:ied,jsd:jed))    ; cobalt%hp_jingest_n_100    = 0.0
    allocate(cobalt%hp_jremin_n_100(isd:ied,jsd:jed))     ; cobalt%hp_jremin_n_100     = 0.0
    allocate(cobalt%hp_jprod_ndet_100(isd:ied,jsd:jed))   ; cobalt%hp_jprod_ndet_100   = 0.0
@@ -12748,6 +13114,79 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(bact(1)%ldonlim)
     deallocate(bact(1)%temp_lim)
 
+	! mixotroph
+    deallocate(mixo(1)%def_fe)
+    deallocate(mixo(1)%def_p)
+    deallocate(mixo(1)%f_fe)
+    deallocate(mixo(1)%f_n)
+    deallocate(mixo(1)%felim)
+    deallocate(mixo(1)%irrlim)
+    deallocate(mixo(1)%jzloss_fe)
+    deallocate(mixo(1)%jzloss_n)
+    deallocate(mixo(1)%jzloss_p)
+    deallocate(mixo(1)%jaggloss_n) 
+    deallocate(mixo(1)%jaggloss_p)
+    deallocate(mixo(1)%jaggloss_fe)
+    deallocate(mixo(1)%jvirloss_n)
+    deallocate(mixo(1)%jvirloss_p)
+    deallocate(mixo(1)%jvirloss_fe)
+    deallocate(mixo(1)%jexuloss_n)
+    deallocate(mixo(1)%jexuloss_p)
+    deallocate(mixo(1)%jexuloss_fe)
+    deallocate(mixo(1)%juptake_fe)
+    deallocate(mixo(1)%juptake_nh4)
+    deallocate(mixo(1)%juptake_no3)
+    deallocate(mixo(1)%juptake_po4)
+    deallocate(mixo(1)%jprod_n)
+    deallocate(mixo(1)%liebig_lim)
+    deallocate(mixo(1)%mu)
+    deallocate(mixo(1)%po4lim)
+    deallocate(mixo(1)%q_fe_2_n)
+    deallocate(mixo(1)%q_p_2_n)
+    deallocate(mixo(1)%theta)
+    deallocate(mixo(1)%f_mu_mem)
+    deallocate(mixo(1)%mu_mix)
+    deallocate(mixo(1)%agg_lim)
+    deallocate(mixo(1)%nh4lim)
+    deallocate(mixo(1)%no3lim)
+    deallocate(mixo(1)%jingest_n)
+    deallocate(mixo(1)%jingest_p)
+    deallocate(mixo(1)%jingest_sio2)
+    deallocate(mixo(1)%jingest_fe)
+    deallocate(mixo(1)%jprod_fed)
+    deallocate(mixo(1)%jprod_fedet)
+    deallocate(mixo(1)%jprod_ndet)
+    deallocate(mixo(1)%jprod_pdet)
+    deallocate(mixo(1)%jprod_ldon)
+    deallocate(mixo(1)%jprod_ldop)
+    deallocate(mixo(1)%jprod_srdon)
+    deallocate(mixo(1)%jprod_srdop)
+    deallocate(mixo(1)%jprod_sldon)
+    deallocate(mixo(1)%jprod_sldop)
+    deallocate(mixo(1)%jprod_sidet)
+    deallocate(mixo(1)%jprod_sio4)
+    deallocate(mixo(1)%jprod_po4)
+    deallocate(mixo(1)%jprod_nh4)
+    deallocate(mixo(1)%jprod_n)
+    deallocate(mixo(1)%o2lim)
+    deallocate(mixo(1)%temp_lim)
+    deallocate(mixo(1)%jprod_n_100)
+    deallocate(mixo(1)%jprod_n_new_100)
+    deallocate(mixo(1)%jzloss_n_100)
+    deallocate(mixo(1)%jexuloss_n_100)
+    deallocate(mixo(1)%f_n_100)
+    deallocate(mixo(1)%juptake_fe_100)
+    deallocate(mixo(1)%juptake_po4_100)
+    deallocate(mixo(1)%jvirloss_n_100)
+    deallocate(mixo(1)%jaggloss_n_100)
+    deallocate(mixo(1)%nlim_bw_100)
+    deallocate(mixo(1)%plim_bw_100)
+    deallocate(mixo(1)%irrlim_bw_100)
+    deallocate(mixo(1)%def_fe_bw_100)
+    deallocate(mixo(1)%jingest_n_100)
+    deallocate(mixo(1)%jremin_n_100)
+    deallocate(mixo(1)%jprod_don_100)
+	
     ! zooplankton
     do n = 1, NUM_ZOO
        deallocate(zoo(n)%f_n)
