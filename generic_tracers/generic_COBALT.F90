@@ -546,9 +546,6 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           jexuloss_fe , &
           jexuloss_n  , &
           jexuloss_p  , &
-          jhploss_fe  , & 
-          jhploss_n   , &
-          jhploss_p   , & 
           juptake_fe  , & 
           juptake_nh4 , & 
           juptake_no3 , & 
@@ -604,9 +601,6 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_jexuloss_n   = -1, &
           id_jexuloss_p   = -1, &
           id_jexuloss_fe  = -1, &
-          id_jhploss_fe   = -1, & 
-          id_jhploss_n    = -1, & 
-          id_jhploss_p    = -1, &
           id_juptake_fe   = -1, &
           id_juptake_nh4  = -1, &
           id_juptake_no3  = -1, & 
@@ -662,7 +656,6 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_jvirloss_n_100   = -1, &
           id_jexuloss_n_100   = -1, &
           id_jingest_n_100  = -1, &
-          id_jhploss_n_100  = -1, &
           id_jprod_ndet_100 = -1, &
           id_jprod_don_100  = -1, &
           id_jremin_n_100   = -1, &
