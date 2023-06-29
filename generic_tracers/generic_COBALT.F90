@@ -2182,6 +2182,255 @@ write (stdlogunit, generic_COBALT_nml)
     phyto(LARGE)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+     ! Register the diagnostics for the mixotroph
+    !
+    ! Register Limitation Diagnostics
+    !
+
+    vardesc_temp = vardesc("def_fe_Mx","Mixotroph Fe Deficiency",'h','L','s','dimensionless','f')
+    mixo(1)%id_def_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("felim_Mx","Mixotroph Fed uptake Limitation",'h','L','s','dimensionless','f')
+    mixo(1)%id_felim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("irrlim_Mx","Mixotroph Light Limitation",'h','L','s','dimensionless','f')
+    mixo(1)%id_irrlim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("theta_Mx","Mixotroph Chl:C",'h','L','s','g Chl (g C)-1','f')
+    mixo(1)%id_theta = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("mu_Mx","Mixotroph Growth Rate",'h','L','s','s-1','f')
+    mixo(1)%id_mu = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("mu_mem_Mx","Mixotroph Growth Memory",'h','L','s','s-1','f')
+    mixo(1)%id_f_mu_mem = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("mu_mix_Mx","Mixotroph ML ave",'h','L','s','s-1','f')
+    mixo(1)%id_mu_mix = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("nh4lim_Mx","Ammonia Limitation of Mixotroph",'h','L','s','dimensionless','f')
+    mixo(1)%id_nh4lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("no3lim_Mx","Nitrate Limitation of Mixotroph",'h','L','s','dimensionless','f')
+    mixo(1)%id_no3lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("po4lim_Mx","Phosphate Limitation of Mixotroph",'h','L','s','dimensionless','f')
+    mixo(1)%id_po4lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("q_fe_2_n_Mx","Fe:N ratio of Mixotroph",'h','L','s','mol Fe/mol N','f')
+    mixo(1)%id_q_fe_2_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    ! Register diagnostics for mixotroph loss terms: zooplankton 
+    ! CAS: loss diagnostics simplified to just N
+
+    vardesc_temp = vardesc("jzloss_n_Mx","Mixotroph nitrogen loss to zooplankton layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jzloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    !  Register diagnostics for mixotroph loss terms: aggregation 
+    !
+
+    vardesc_temp = vardesc("jaggloss_n_Mx","Mixotroph nitrogen loss to aggregation layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jaggloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("agg_lim_Mx","Mixotroph aggregation limitation",&
+                           'h','L','s','dimensionless','f')
+    mixo(1)%id_agg_lim= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+
+    !
+    !  Register diagnostics for mixotroph loss terms: viruses
+    !
+
+    vardesc_temp = vardesc("jvirloss_n_Mx","Mixotroph nitrogen loss to viruses layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jvirloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    ! Register diagnostics for mixotroph exudation
+    !
+
+    vardesc_temp = vardesc("jexuloss_n_Mx","Mixotroph nitrogen loss via exudation",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jexuloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     !
+    ! Register diagnostics for mixotroph loss terms: higher predators
+    !
+
+    vardesc_temp = vardesc("jhploss_n_Mx","mixotrophs nitrogen loss to higher predators layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jhploss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    ! Register mixotroph ingestion rates
+    !
+
+    vardesc_temp = vardesc("jingest_n_Mx","Ingestion of nitrogen by mixotrophs, layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jingest_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jingest_p_Mx","Ingestion of phosphorous by mixotrophs, layer integral", &
+                           'h','L','s','mol P m-2 s-1','f')
+    mixo(1)%id_jingest_p = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jingest_sio2_Mx","Ingestion of sio2 by mixotrophs, layer integral",&
+                           'h','L','s','mol SiO2 m-2 s-1','f')
+    mixo(1)%id_jingest_sio2 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jingest_fe_Mx","Ingestion of Fe by mixotrophs, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    mixo(1)%id_jingest_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    ! Register detrital production terms for mixotrophs
+    !
+
+    vardesc_temp = vardesc("jprod_ndet_Mx","Production of nitrogen detritus by mixotrophs, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jprod_ndet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_pdet_Mx","Production of phosphorous detritus by mixotrophs, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    mixo(1)%id_jprod_pdet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+
+    vardesc_temp = vardesc("jprod_sidet_Mx","Production of opal detritus by mixotrophs, layer integral",&
+                   'h','L','s','mol SiO2 m-2 s-1','f')
+    mixo(1)%id_jprod_sidet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_sio4_Mx","Production of sio4 by mixotrophs through grazing/dissolution, layer integral",&
+                   'h','L','s','mol SiO4 m-2 s-1','f')
+    mixo(1)%id_jprod_sio4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_fedet_Mx","Production of iron detritus by mixotrophs, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    mixo(1)%id_jprod_fedet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    ! Register dissolved organic/inorganic production terms for mixotrophs
+    !
+    ! Labile dissolved organic nitrogen 
+    vardesc_temp = vardesc("jprod_ldon_Mx","Production of labile dissolved organic nitrogen by mixotrophs, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jprod_ldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! Labile dissolved organic phosphorous
+    vardesc_temp = vardesc("jprod_ldop_Mx","Production of labile dissolved organic phosphorous by mixotrophs, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    mixo(1)%id_jprod_ldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! Refractory dissolved organic nitrogen
+    vardesc_temp = vardesc("jprod_srdon_Mx","Production of semi-refractory dissolved organic nitrogen by mixotrophs, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jprod_srdon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! Labile dissolved organic phosphorous
+    vardesc_temp = vardesc("jprod_srdop_Mx","Production of semi-refractory dissolved organic phosphorous by mixotrophs, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    mixo(1)%id_jprod_srdop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! semi-labile dissolved organic nitrogen 
+    vardesc_temp = vardesc("jprod_sldon_Mx","Production of semi-labile dissolved organic nitrogen by mixotrophs, layer integral",&
+                   'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jprod_sldon = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! semi-labile dissolved organic phosphorous
+    vardesc_temp = vardesc("jprod_sldop_Mx","Production of semi-labile dissolved organic phosphorous by mixotrophs, layer integral",&
+                   'h','L','s','mol P m-2 s-1','f')
+    mixo(1)%id_jprod_sldop = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! dissolved iron
+    vardesc_temp = vardesc("jprod_fed_Mx","Production of dissolved iron by mixotrophs, layer integral",&
+                   'h','L','s','mol Fe m-2 s-1','f')
+    mixo(1)%id_jprod_fed = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! phosphate
+    vardesc_temp = vardesc("jprod_po4_Mx","Production of phosphate by mixotrophs, layer integral",&
+                   'h','L','s','mol PO4 m-2 s-1','f')
+    mixo(1)%id_jprod_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    ! ammonia
+    vardesc_temp = vardesc("jprod_nh4_Mx","Production of ammonia by mixotrophs, layer integral",&
+                   'h','L','s','mol NH4 m-2 s-1','f')
+    mixo(1)%id_jprod_nh4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     !
+    ! Register Mixotroph Primary Production Diagnostics
+    !
+
+    vardesc_temp = vardesc("juptake_fe_Mx","Mixotroph Fed uptake layer integral",&
+                           'h','L','s','mol Fe m-2 s-1','f')
+    mixo(1)%id_juptake_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("juptake_nh4_Mx","Mixotroph NH4 uptake layer integral",&
+                           'h','L','s','mol NH4 m-2 s-1','f')
+    mixo(1)%id_juptake_nh4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("juptake_no3_Mx","Mixotroph NO3 uptake layer integral",&
+                           'h','L','s','mol NO3 m-2 s-1','f')
+    mixo(1)%id_juptake_no3 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("juptake_po4_Mx","Mixotroph PO4 uptake layer integral",&
+                           'h','L','s','mol PO4 m-2 s-1','f')
+    mixo(1)%id_juptake_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_nmx","Mixotroph Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    !
+    ! Register mixotroph production terms 
+    !
+
+    vardesc_temp = vardesc("o2lim_Mx","Oxygen limitation of mixotrophs",'h','L','s','dimensionless','f')
+    mixo(1)%id_o2lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("temp_lim_Mx","Temperature limitation of mixotrophs",'h','L','s','dimensionless','f')
+    mixo(1)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
     !
     ! Register zooplankton diagnostics, starting with losses of zooplankton to ingestion by zooplankton
     !
@@ -13688,4 +13937,4 @@ write (stdlogunit, generic_COBALT_nml)
 
 
  
-end module generic_COBALT
+end module generic_COBALT_end
