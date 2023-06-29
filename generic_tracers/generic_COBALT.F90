@@ -388,7 +388,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           ipa_smp,          & ! innate prey availability of low-light adapt. small phytos 
           ipa_lgp,          & ! innate prey availability of large phytoplankton
           ipa_diaz,         & ! innate prey availability of diazotrophs 
-          ipa_mx,         & ! innate prey availability of diazotrophs 
+          ipa_mx,         & ! innate prey availability of mixotrophs 
           ipa_smz,          & ! innate prey availability of small zooplankton
           ipa_mdz,          & ! innate prey availability of large zooplankton
           ipa_lgz,          & ! innate prey availability of x-large zooplankton
@@ -482,7 +482,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           frac_mu_agg,   &
           vir,           &            
           exu,           &
-     	  imax,             & ! maximum ingestion rate (sec-1)         
+     	imax,             & ! maximum ingestion rate (sec-1)         
           ki,               & ! half-sat for ingestion (moles N m-3)
           gge_max,          & ! max gross growth efficiciency (approached as i >> bresp, dimensionless)
           nswitch,          & ! switching parameter (dimensionless)
@@ -501,7 +501,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           ipa_smp,          & ! innate prey availability of low-light adapt. small phytos 
           ipa_lgp,          & ! innate prey availability of large phytoplankton
           ipa_diaz,         & ! innate prey availability of diazotrophs 
-          ipa_mx,         & ! innate prey availability of diazotrophs 
+          ipa_mx,         & ! innate prey availability of mixotrophs 
           ipa_smz,          & ! innate prey availability of small zooplankton
           ipa_mdz,          & ! innate prey availability of large zooplankton
           ipa_lgz,          & ! innate prey availability of x-large zooplankton
@@ -566,21 +566,21 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           jingest_p,        & ! Total ingestion of p
           jingest_sio2,     & ! Total ingestion of silicate
           jingest_fe,	    & ! Total ingestion of iron
-          jprod_ndet,       & ! production of nitrogen detritus by zooplankton group 
-          jprod_pdet,       & ! production of phosphorous detritus by zooplankton group
-          jprod_ldon,       & ! production of labile dissolved organic N by zooplankton group
-          jprod_ldop,       & ! production of labile dissolved organic P by zooplankton group
-          jprod_srdon,      & ! production of semi-refractory dissolved organic N by zooplankton group
-          jprod_srdop,      & ! production of semi-refractory dissolved organic P by zooplankton group 
-          jprod_sldon,      & ! production of semi-labile dissolved organic N by zooplankton group
-          jprod_sldop,      & ! production of semi-labile dissolved organic P by zooplankton group
+          jprod_ndet,       & ! production of nitrogen detritus by mixotroph group 
+          jprod_pdet,       & ! production of phosphorous detritus by mixotroph group
+          jprod_ldon,       & ! production of labile dissolved organic N by mixotroph group
+          jprod_ldop,       & ! production of labile dissolved organic P by mixotroph group
+          jprod_srdon,      & ! production of semi-refractory dissolved organic N by mixotroph group
+          jprod_srdop,      & ! production of semi-refractory dissolved organic P by mixotroph group 
+          jprod_sldon,      & ! production of semi-labile dissolved organic N by mixotroph group
+          jprod_sldop,      & ! production of semi-labile dissolved organic P by mixotroph group
           jprod_fed,	    & ! production of dissolved iron
           jprod_fedet,      & ! production of iron detritus
           jprod_sidet,	    & ! production of silica detritus
           jprod_sio4,       & ! production of silicate via rapid dissolution at surface
-          jprod_po4,        & ! phosphate production by zooplankton
-          jprod_nh4,        & ! ammonia production by zooplankton
-          jprod_n,          & ! zooplankton production
+          jprod_po4,        & ! phosphate production by mixotroph
+          jprod_nh4,        & ! ammonia production by mixotroph
+          jprod_n,          & ! mixotroph production
           temp_lim            ! Temperature limitation
 		              
      integer ::            &
@@ -842,6 +842,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           hp_ipa_smz,       & ! "  "  "  "  "  "  "  "  "   small zooplankton to hp's
           hp_ipa_mdz,       & ! "  "  "  "  "  "  "  "  "   medium zooplankton to hp's
           hp_ipa_lgz,       & ! "  "  "  "  "  "  "  "  "   large zooplankton to hp's
+          hp_ipa_mx,       & ! "  "  "  "  "  "  "  "  "   mixotrophs to hp's
           hp_ipa_det,       & ! "  "  "  "  "  "  "  "  "   detritus to hp's
           hp_phi_det          ! fraction of ingested N to detritus
           
@@ -1699,6 +1700,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
   integer :: id_clock_phyto_growth
   integer :: id_clock_bacteria_growth
   integer :: id_clock_zooplankton_calculations
+  integer :: id_clock_mixotroph_calculations
   integer :: id_clock_other_losses
   integer :: id_clock_production_loop
   integer :: id_clock_ballast_loops
@@ -1810,6 +1812,7 @@ write (stdlogunit, generic_COBALT_nml)
     id_clock_phyto_growth = mpp_clock_id('(Cobalt: phytoplankton growth calcs)',grain=CLOCK_MODULE)
     id_clock_bacteria_growth = mpp_clock_id('(Cobalt: bacteria growth calcs)',grain=CLOCK_MODULE)
     id_clock_zooplankton_calculations = mpp_clock_id('(Cobalt: zooplankton calculations)',grain=CLOCK_MODULE)
+    id_clock_mixotroph_calculations = mpp_clock_id('(Cobalt: mixotroph calculations)',grain=CLOCK_MODULE)
     id_clock_other_losses = mpp_clock_id('(Cobalt: other losses)',grain=CLOCK_MODULE)
     id_clock_production_loop = mpp_clock_id('(Cobalt: production loop)',grain=CLOCK_MODULE)
     id_clock_ballast_loops = mpp_clock_id('(Cobalt: ballasting loops)',grain=CLOCK_MODULE)
