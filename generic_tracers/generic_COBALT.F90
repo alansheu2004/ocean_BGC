@@ -5911,21 +5911,6 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('fe_2_n_upt_fac', cobalt%fe_2_n_upt_fac, 15.0e-6)               ! mol Fe mol N-1
     !
     !-----------------------------------------------------------------------
-    ! Mixotroph Autotrophy Parameters: Nutrient Limitation & Photosynthesis  
-    !-----------------------------------------------------------------------
-    !
-    call g_tracer_add_param('k_fed_mx', mixo(1)%k_fed,  1.0e-10)                 ! mol Fed kg-1
-    call g_tracer_add_param('k_nh4_mx', mixo(1)%k_nh4,  k_nh4_small)                  ! mol NH4 kg-1
-    call g_tracer_add_param('k_no3_mx', mixo(1)%k_no3,  k_no3_small)                  ! mol NO3 kg-1
-    call g_tracer_add_param('k_po4_mx', mixo(1)%k_po4,  1.0e-8)                  ! mol PO4 kg-1
-    call g_tracer_add_param('k_fe_2_n_mx',mixo(1)%k_fe_2_n, 3.0e-6*106.0/16.0)        ! mol Fe mol N-1
-    call g_tracer_add_param('fe_2_n_max_mx',mixo(1)%fe_2_n_max, 50.e-6*106.0/16.0)     ! mol Fe mol N-1
-    call g_tracer_add_param('alpha_mx', mixo(1)%alpha,  2.4e-5*2.77e18/6.022e17)      ! g C g Chl-1 m-2 J-1
-    call g_tracer_add_param('P_C_max_mx', mixo(1)%P_C_max, 1.25/sperd)               ! s-1
-    call g_tracer_add_param('bresp_mx', mixo(1)%bresp,0.03/sperd)                     ! sec-1 
-    call g_tracer_add_param('p_2_n_static_mx', mixo(1)%p_2_n_static,1.0/20.0 )         ! mol P mol N-1
-    !
-    !-----------------------------------------------------------------------
     ! Phytoplankton light limitation/growth rate
     !-----------------------------------------------------------------------
     !
@@ -5952,6 +5937,21 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('refuge_conc', cobalt%refuge_conc, 1.0e-9)                     ! moles N kg-1
     !
     !-----------------------------------------------------------------------
+    ! Mixotroph Autotrophy Parameters 
+    !-----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('k_fed_Mx', mixo(1)%k_fed,  1.0e-10)                 ! mol Fed kg-1
+    call g_tracer_add_param('k_nh4_Mx', mixo(1)%k_nh4,  k_nh4_small)                  ! mol NH4 kg-1
+    call g_tracer_add_param('k_no3_Mx', mixo(1)%k_no3,  k_no3_small)                  ! mol NO3 kg-1
+    call g_tracer_add_param('k_po4_Mx', mixo(1)%k_po4,  1.0e-8)                  ! mol PO4 kg-1
+    call g_tracer_add_param('k_fe_2_n_Mx',mixo(1)%k_fe_2_n, 3.0e-6*106.0/16.0)        ! mol Fe mol N-1
+    call g_tracer_add_param('fe_2_n_max_Mx',mixo(1)%fe_2_n_max, 50.e-6*106.0/16.0)     ! mol Fe mol N-1
+    call g_tracer_add_param('alpha_Mx', mixo(1)%alpha,  2.4e-5*2.77e18/6.022e17)      ! g C g Chl-1 m-2 J-1
+    call g_tracer_add_param('P_C_max_Mx', mixo(1)%P_C_max, 1.25/sperd)               ! s-1
+    call g_tracer_add_param('thetamax_Mx', mixo(1)%thetamax, 0.03)                    ! g Chl g C-1
+    call g_tracer_add_param('bresp_Mx', mixo(1)%bresp,0.03/sperd)                     ! sec-1 
+    !
+    !-----------------------------------------------------------------------
     ! Nitrogen fixation inhibition parameters
     !-----------------------------------------------------------------------
     !
@@ -5968,6 +5968,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('p_2_n_static_Di', phyto(DIAZO)%p_2_n_static,1.0/40.0 )         ! mol P mol N-1
     call g_tracer_add_param('p_2_n_static_Lg', phyto(LARGE)%p_2_n_static,1.0/12.0 )         ! mol P mol N-1
     call g_tracer_add_param('p_2_n_static_Sm', phyto(SMALL)%p_2_n_static,1.0/20.0 )         ! mol P mol N-1
+    call g_tracer_add_param('p_2_n_static_Mx', mixo(1)%p_2_n_static,1.0/20.0 )         ! mol P mol N-1
     call g_tracer_add_param('si_2_n_static_Lg', phyto(LARGE)%si_2_n_static, 2.0)            ! mol Si mol N-1
     call g_tracer_add_param('si_2_n_max_Lg', phyto(LARGE)%si_2_n_max, 3.0)                  ! mol Si mol N-1
     call g_tracer_add_param('ca_2_n_arag', cobalt%ca_2_n_arag, 0.030 * 106.0 / 16.0)        ! mol Ca mol N-1
@@ -6022,10 +6023,10 @@ write (stdlogunit, generic_COBALT_nml)
     ! Mixotroph Autotrophic Losses: Aggregation, Viral Lysis, Exudation  
     !-----------------------------------------------------------------------
     !
-    call g_tracer_add_param('agg_mx',mixo(1)%agg,0.1*1e6 / sperd)           ! s-1 (mole N kg)-1
-    call g_tracer_add_param('frac_mu_agg_mx',mixo(1)%frac_mu_agg,0.25)      ! none
-    call g_tracer_add_param('vir_mx',mixo(1)%vir, 0.20*1e6/sperd )  ! s-1 (mole N kg)-1
-    call g_tracer_add_param('exu_mx',mixo(1)%exu, 0.13) ! dimensionless (fraction of NPP)
+    call g_tracer_add_param('agg_Mx',mixo(1)%agg,0.1*1e6 / sperd)           ! s-1 (mole N kg)-1
+    call g_tracer_add_param('frac_mu_agg_Mx',mixo(1)%frac_mu_agg,0.25)      ! none
+    call g_tracer_add_param('vir_Mx',mixo(1)%vir, 0.20*1e6/sperd )  ! s-1 (mole N kg)-1
+    call g_tracer_add_param('exu_Mx',mixo(1)%exu, 0.13) ! dimensionless (fraction of NPP)
     !
     !-----------------------------------------------------------------------
     ! Zooplankton ingestion parameterization and temperature dependence
@@ -6075,7 +6076,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('mswitch_mdz',zoo(2)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_lgz',zoo(3)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_mx',mixo(1)%mswitch, 2.0)          ! dimensionless
-    ! innate prey availability for small zooplankton 
+    ! innate prey availability for mixotrophs
     call g_tracer_add_param('mx_ipa_smp',mixo(1)%ipa_smp, 0.25)    ! dimensionless
     call g_tracer_add_param('mx_ipa_lgp',mixo(1)%ipa_lgp, 0.0)          ! dimensionless
     call g_tracer_add_param('mx_ipa_diaz',mixo(1)%ipa_diaz,0.0)         ! dimensionless
