@@ -6901,19 +6901,25 @@ write (stdlogunit, generic_COBALT_nml)
 
     call g_tracer_add(tracer_list,package_name,&
          name       = 'mu_mem_ndi',           &
-         longname   = 'Growth memory', &
+         longname   = 'Diazotroph Growth memory', &
          units      = 'sec-1',         &
          prog       = .false.              )
 
     call g_tracer_add(tracer_list,package_name,&
          name       = 'mu_mem_nlg',           &
-         longname   = 'Growth memory', &
+         longname   = 'Large Phytoplankton Growth memory', &
          units      = 'sec-1',         &
          prog       = .false.              )
 
     call g_tracer_add(tracer_list,package_name,&
          name       = 'mu_mem_nsm',           &
-         longname   = 'Growth memory', &
+         longname   = 'Small Phytoplankton Growth memory', &
+         units      = 'sec-1',         &
+         prog       = .false.              )
+
+    call g_tracer_add(tracer_list,package_name,&
+         name       = 'mu_mem_nmx',           &
+         longname   = 'Mixotroph Growth memory', &
          units      = 'sec-1',         &
          prog       = .false.              )
 
