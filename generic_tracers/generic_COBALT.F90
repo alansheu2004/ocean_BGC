@@ -4326,6 +4326,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="mole_concentration_of_miscellaneous_phytoplankton_expressed_as_carbon_in_sea_water", &
          cmor_long_name="Mole Concentration of Miscellaneous Phytoplankton expressed as Carbon in sea water")
 
+    vardesc_temp = vardesc("phymixo_raw","Mole Concentration of Micotrophs expressed as Carbon in sea water",'h','L','s','mol m-3','f')
+    cobalt%id_mixo = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="mixo", cmor_units="mol m-3",                          &
+         cmor_standard_name="mole_concentration_of_mixotrophs_expressed_as_carbon_in_sea_water", &
+         cmor_long_name="Mole Concentration of Mixotrophs expressed as Carbon in sea water")
+
     vardesc_temp = vardesc("zmicro_raw","Mole Concentration of Microzooplankton expressed as Carbon in sea water",'h','L','s','mol m-3','f')
     cobalt%id_zmicro = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
@@ -4463,6 +4470,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_field_name="chlmisc", cmor_units="kg m-3",                          &
          cmor_standard_name="mass_concentration_of_miscellaneous_phytoplankton_expressed_as_chlorophyll_in_sea_water", &
          cmor_long_name="Mass Concentration of Other Phytoplankton expressed as Chlorophyll in sea water")
+
+    vardesc_temp = vardesc("chlmixo_raw","Mass Concentration of Mixotrophs expressed as Chlorophyll in sea water",'h','L','s','kg m-3','f')
+    cobalt%id_chlmixo = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="chlmixo", cmor_units="kg m-3",                          &
+         cmor_standard_name="mass_concentration_of_mixotrophs_expressed_as_chlorophyll_in_sea_water", &
+         cmor_long_name="Mass Concentration of Mixotrophs expressed as Chlorophyll in sea water")
 
 ! 2017/11/27 not in data request
     vardesc_temp = vardesc("poc_raw","Mole Concentration of Particulate Organic Matter expressed as Carbon in sea water",'h','L','s','mol m-3','f')
@@ -4727,6 +4741,14 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="tendency_of_mole_concentration_of_particulate_organic_matter_expressed_as_carbon_in_sea_water_due_to_net_primary_production_by_miscellaneous_phytoplankton", &
          cmor_long_name="Net Primary Organic Carbon Production by Other Phytoplankton")
 
+! CHECK3:
+    vardesc_temp = vardesc("ppmixo_raw","Net Primary Organic Carbon Production by Mixotrophs",'h','L','s','mol m-3 s-1','f')
+    cobalt%id_ppmixo = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="ppmixo", cmor_units="mol m-3 s-1",                          &
+         cmor_standard_name="tendency_of_mole_concentration_of_particulate_organic_matter_expressed_as_carbon_in_sea_water_due_to_net_primary_production_by_mixotrophs", &
+         cmor_long_name="Net Primary Organic Carbon Production by Mixotrophs")
+
     vardesc_temp = vardesc("bddtdic_raw","Rate of Change of Dissolved Inorganic Carbon due to Biological Activity",'h','L','s','mol m-3 s-1','f')
     cobalt%id_bddtdic = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
@@ -4824,6 +4846,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="nitrogen_growth_limitation_of_miscellaneous_phytoplankton", &
          cmor_long_name="Nitrogen Limitation of Other Phytoplankton")
 
+    vardesc_temp = vardesc("limnmisc_raw","Nitrogen Limitation of MIxotrophs",'h','1','s','1','f')
+    cobalt%id_limnmixo = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="limnmixo", cmor_units="1",                          &
+         cmor_standard_name="nitrogen_growth_limitation_of_mixotrophs", &
+         cmor_long_name="Nitrogen Limitation of Mixotrophs")
+
     vardesc_temp = vardesc("limirrdiat_raw","Irradiance Limitation of Diatoms",'h','1','s','1','f')
     cobalt%id_limirrdiat = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
@@ -4851,6 +4880,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_field_name="limirrmisc", cmor_units="1",                          &
          cmor_standard_name="growth_limitation_of_miscellaneous_phytoplankton_due_to_solar_irradiance", &
          cmor_long_name="Irradiance Limitation of Other Phytoplankton")
+
+    vardesc_temp = vardesc("limirrmisc_raw","Irradiance Limitation of Mixotrophs",'h','1','s','1','f')
+    cobalt%id_limirrmixo = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="limirrmisc", cmor_units="1",                          &
+         cmor_standard_name="growth_limitation_of_mixotrophs_due_to_solar_irradiance", &
+         cmor_long_name="Irradiance Limitation of Mixotrophs")
 
     vardesc_temp = vardesc("limfediat_raw","Iron Limitation of Diatoms",'h','1','s','1','f')
     cobalt%id_limfediat = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
@@ -4880,6 +4916,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="iron_growth_limitation_of_miscellaneous_phytoplankton", &
          cmor_long_name="Iron Limitation of Other Phytoplankton")
 
+    vardesc_temp = vardesc("limfemisc_raw","Iron Limitation of Mixotrophs",'h','1','s','1','f')
+    cobalt%id_limfemixo = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="limfemixo", cmor_units="1",                          &
+         cmor_standard_name="iron_growth_limitation_of_mixotrophs", &
+         cmor_long_name="Iron Limitation of Mixotrophs")
+
 !-- added by JGJ - not requested by CMIP6/OMIP
     vardesc_temp = vardesc("limpdiat_raw","Phosphorus Limitation of Diatoms",'h','1','s','1','f')
     cobalt%id_limpdiat = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
@@ -4908,6 +4951,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_field_name="limpmisc", cmor_units="1",                          &
          cmor_standard_name="phosphorus_growth_limitation_of_miscellaneous_phytoplankton", &
          cmor_long_name="Phosphorus Limitation of Other Phytoplankton")
+
+    vardesc_temp = vardesc("limpmisc_raw","Phosphorus Limitation of Mixotrophs",'h','1','s','1','f')
+    cobalt%id_limpmixo = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="limpmixo", cmor_units="1",                          &
+         cmor_standard_name="phosphorus_growth_limitation_of_mixotrophs", &
+         cmor_long_name="Phosphorus Limitation of Other Mixotrophs")
 
 !------------------------------------------------------------------------------------------------------------------
 ! 2-D fields
@@ -5018,6 +5068,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_field_name="phymiscos", cmor_units="mol m-3",                          &
          cmor_standard_name="mole_concentration_of_miscellaneous_phytoplankton_expressed_as_carbon_in_sea_water", &
          cmor_long_name="Surface Mole Concentration of Miscellaneous Phytoplankton expressed as Carbon in sea water")
+
+     vardesc_temp = vardesc("mixoos_raw","Surface Mole Concentration of Mixotrophs expressed as Carbon in sea water",'h','1','s','mol m-3','f')
+    cobalt%id_mixoos = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="mixoos", cmor_units="mol m-3",                          &
+         cmor_standard_name="mole_concentration_of_mixotrophs_expressed_as_carbon_in_sea_water", &
+         cmor_long_name="Surface Mole Concentration of Miscellaneous Mixotrophs expressed as Carbon in sea water")
 
     vardesc_temp = vardesc("zmicroos_raw","Surface Mole Concentration of Microzooplankton expressed as Carbon in sea water",'h','1','s','mol m-3','f')
     cobalt%id_zmicroos = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
@@ -5160,6 +5217,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="mass_concentration_of_miscellaneous_phytoplankton_expressed_as_chlorophyll_in_sea_water", &
          cmor_long_name="Surface Mass Concentration of Other Phytoplankton expressed as Chlorophyll in sea water")
 
+    vardesc_temp = vardesc("chlmixoos_raw","Surface Mass Concentration of Mixotrophs expressed as Chlorophyll in sea water",'h','1','s','kg m-3','f')
+    cobalt%id_chlmixoos = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="chlmixoos", cmor_units="kg m-3",                          &
+         cmor_standard_name="mass_concentration_of_mixotrophs_expressed_as_chlorophyll_in_sea_water", &
+         cmor_long_name="Surface Mass Concentration of Mixotrophs expressed as Chlorophyll in sea water")
+
     vardesc_temp = vardesc("ponos_raw","Surface Mole Concentration of Particulate Organic Matter expressed as Nitrogen in sea water",'h','1','s','mol N m-3','f')
     cobalt%id_ponos = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
@@ -5296,6 +5360,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_field_name="intppmisc", cmor_units="mol m-2 s-1",                          &
          cmor_standard_name="net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_miscellaneous_phytoplankton", &
          cmor_long_name="Net Primary Organic Carbon Production by Other Phytoplankton")
+
+    vardesc_temp = vardesc("intppmixo_raw","Net Primary Organic Carbon Production by Mixotrophs",'h','1','s','mol m-2 s-1','f')
+    cobalt%id_intppmixo = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="intppmixo", cmor_units="mol m-2 s-1",                          &
+         cmor_standard_name="net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_mixotrophs", &
+         cmor_long_name="Net Primary Organic Carbon Production by Mixotrophs")
 
     vardesc_temp = vardesc("intpbn_raw","Nitrogen Production",'h','1','s','mol m-2 s-1','f')
     cobalt%id_intpbn = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
@@ -14027,3 +14098,4 @@ write (stdlogunit, generic_COBALT_nml)
  
 end module generic_COBALT_end
 ! TEST COMMENT
+
