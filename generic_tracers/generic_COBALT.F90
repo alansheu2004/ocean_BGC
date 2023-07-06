@@ -506,7 +506,9 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           ipa_mdz,          & ! innate prey availability of large zooplankton
           ipa_lgz,          & ! innate prey availability of x-large zooplankton
           ipa_det,          & ! innate prey availability of detritus
-          ipa_bact            ! innate prey availability for bacteria
+          ipa_bact          & ! innate prey availability for bacteria
+          epsilon,          & ! mixotrophy preference parameter
+          eta               & ! mixotrophy inefficiency factor
      real, ALLOCATABLE, dimension(:,:)  :: &
           jprod_n_100,      & 
           jprod_n_new_100,  & 
@@ -6296,6 +6298,13 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('gamma_nitrif',  cobalt%gamma_nitrif, gamma_nitrif / (30.0 * sperd))     ! s-1
     call g_tracer_add_param('gamma_nitrif',  cobalt%k_nh3_nitrif, k_nh3_nitrif )                     ! moles kg-1
     call g_tracer_add_param('irr_inhibit',  cobalt%irr_inhibit, irr_inhibit)                         ! W m-2
+    !
+    !-----------------------------------------------------------------------
+    ! Mixotrophy Parameters
+    !-----------------------------------------------------------------------
+    !
+    call g_tracer_add_param('epsilon', mixo(1)%epsilon, 0.5)               ! none
+    call g_tracer_add_param('eta', mixo(1)%eta, 0.9)                       ! none
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
