@@ -3645,6 +3645,50 @@ write (stdlogunit, generic_COBALT_nml)
     phyto(DIAZO)%id_sfc_po4lim = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+     vardesc_temp = vardesc("sfc_nmx","Surface mixotroph nitrogen",'h','1','s','mol kg-1','f')
+    mixo(1)%id_sfc_f_n = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_chl_mx","Surface mixotroph chlorophyll",'h','1','s','ug kg-1','f')
+    mixo(1)%id_sfc_chl = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_def_fe_mx","Surface mixotroph iron deficiency",'h','1','s','dimensionsless','f')
+    mixo(1)%id_sfc_def_fe = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_felim_mx","Surface mixotroph iron uptake limitation",'h','1','s','dimensionsless','f')
+    mixo(1)%id_sfc_felim = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_q_fe_2_n_mx","Surface mixotroph iron:nitrogen",'h','1','s','moles Fe (moles N)-1','f')
+    mixo(1)%id_sfc_q_fe_2_n = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_irrlim_mx","Surface mixotroph light limitation",'h','1','s','dimensionsless','f')
+    mixo(1)%id_sfc_irrlim = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_theta_mx","Surface mixotroph Chl:C",'h','1','s','g Chl (g C)-1','f')
+    mixo(1)%id_sfc_theta = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+   vardesc_temp = vardesc("sfc_mu_mx","Surface mixotroph Chl:C",'h','1','s','sec-1','f')
+    mixo(1)%id_sfc_mu = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_no3lim_mx","Surface mixotroph nitrate limitation",'h','1','s','dimensionsless','f')
+    mixo(1)%id_sfc_no3lim = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_nh4lim_mx","Surface mixotroph ammonia limitation",'h','1','s','dimensionsless','f')
+    mixo(1)%id_sfc_nh4lim = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("sfc_po4lim_mx","Surface mixotroph phosphate limitation",'h','1','s','dimensionsless','f')
+    mixo(1)%id_sfc_po4lim = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
     !
     ! 100m integrated fluxes
     !
@@ -3790,6 +3834,46 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
+     vardesc_temp = vardesc("jprod_nmx_100","Mixotroph nitrogen  prim. prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_nmx_new_100","Mixotroph new (NO3-based) prim. prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_new_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jzloss_nmx_100","Mixotroph nitrogen loss to zooplankton integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jzloss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jaggloss_nmx_100","Mixotroph nitrogen aggregation loss integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jaggloss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jvirloss_nmx_100","Mixotroph nitrogen virus loss integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jvirloss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jexuloss_nmx_100","Mixotroph nitrogen exudation loss integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jexuloss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_nmx_100","Mixotroph nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jingest_n_nmx_100","Mixotroph nitrogen ingestion integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jingest_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_don_nmx_100","Mixotroph dissolved org. nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_don_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jremin_n_nmx_100","Mixotroph nitrogen remineralization integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
     vardesc_temp = vardesc("jremin_n_hp_100","Higher predator nitrogen remineralization integral in upper 100m",'h','1','s','mol m-2 s-1','f')
     cobalt%id_hp_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -3904,6 +3988,10 @@ write (stdlogunit, generic_COBALT_nml)
 
     vardesc_temp = vardesc("ndi_100","Diazotroph nitrogen biomass in upper 100m",'h','1','s','mol m-2','f')
     phyto(DIAZO)%id_f_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("nmx_100","Mixotroph nitrogen biomass in upper 100m",'h','1','s','mol m-2','f')
+    mixo(1)%id_f_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("nsmz_100","Small zooplankton nitrogen biomass in upper 100m",'h','1','s','mol m-2','f')
@@ -13938,3 +14026,4 @@ write (stdlogunit, generic_COBALT_nml)
 
  
 end module generic_COBALT_end
+! TEST COMMENT
