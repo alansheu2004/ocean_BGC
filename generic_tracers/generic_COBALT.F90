@@ -497,7 +497,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           phi_srdop,        & ! fraction of ingested N/P to semi-refractory dop 
           phi_nh4,          & ! fraction of ingested N to nh4 due to ingestion-related metabolism
           phi_po4,	    & ! fraction of ingested N to po4 due to ingestion-related metabolism
-          q_p_2_n,          & ! p:n ratio of zooplankton
+          !q_p_2_n,          & ! p:n ratio of zooplankton
           ipa_smp,          & ! innate prey availability of low-light adapt. small phytos 
           ipa_lgp,          & ! innate prey availability of large phytoplankton
           ipa_diaz,         & ! innate prey availability of diazotrophs 
@@ -506,9 +506,9 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           ipa_mdz,          & ! innate prey availability of large zooplankton
           ipa_lgz,          & ! innate prey availability of x-large zooplankton
           ipa_det,          & ! innate prey availability of detritus
-          ipa_bact          & ! innate prey availability for bacteria
+          ipa_bact,         & ! innate prey availability for bacteria
           epsilon,          & ! mixotrophy preference parameter
-          eta               & ! mixotrophy inefficiency factor
+          eta                 ! mixotrophy inefficiency factor
      real, ALLOCATABLE, dimension(:,:)  :: &
           jprod_n_100,      & 
           jprod_n_new_100,  & 
@@ -582,7 +582,6 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           jprod_sio4,       & ! production of silicate via rapid dissolution at surface
           jprod_po4,        & ! phosphate production by mixotroph
           jprod_nh4,        & ! ammonia production by mixotroph
-          jprod_n,          & ! mixotroph production
           temp_lim            ! Temperature limitation
 		              
      integer ::            &
@@ -593,20 +592,29 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_jzloss_fe    = -1, &
           id_jzloss_n     = -1, & 
           id_jzloss_p     = -1, & 
+          id_jzloss_sio2  = -1, &
           id_jaggloss_fe  = -1, &
           id_jaggloss_n   = -1, &
           id_jaggloss_p   = -1, &
+          id_jaggloss_sio2= -1, &
           id_agg_lim      = -1, & 
           id_jvirloss_fe  = -1, & 
           id_jvirloss_n   = -1, &
           id_jvirloss_p   = -1, &
+          id_jvirloss_sio2= -1, &
           id_jexuloss_n   = -1, &
           id_jexuloss_p   = -1, &
           id_jexuloss_fe  = -1, &
+          id_jhploss_fe   = -1, & 
+          id_jhploss_n    = -1, & 
+          id_jhploss_p    = -1, &
+          id_jhploss_sio2 = -1, &
+          id_juptake_n2   = -1, &
           id_juptake_fe   = -1, &
           id_juptake_nh4  = -1, &
           id_juptake_no3  = -1, & 
           id_juptake_po4  = -1, &
+          id_juptake_sio4 = -1, &
           id_jprod_n      = -1, & 
           id_liebig_lim   = -1, &
           id_mu           = -1, &
@@ -618,7 +626,16 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_o2lim        = -1, &
           id_q_fe_2_n     = -1, &
           id_q_p_2_n      = -1, &
+          id_silim        = -1, &
+          id_q_si_2_n     = -1, & 
           id_theta        = -1, &
+          id_jprod_n_100  = -1, &
+          id_jprod_n_new_100  = -1, &     
+          id_jprod_n_n2_100 = -1, &
+          id_jzloss_n_100     = -1, &
+          id_jaggloss_n_100   = -1, &
+          id_jvirloss_n_100   = -1, &
+          id_jexuloss_n_100   = -1, &
           id_f_n_100          = -1, &
           id_sfc_f_n          = -1, &
           id_sfc_chl          = -1, &
@@ -631,7 +648,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_sfc_irrlim       = -1, &
           id_sfc_theta        = -1, &
           id_sfc_mu           = -1, &
-          id_jingest_n      = -1, &
+          id_jingest_n      = -1, & ! ZOOPLANKTON IDS START HERE
           id_jingest_p      = -1, &
           id_jingest_sio2   = -1, &
           id_jingest_fe     = -1, &
@@ -649,19 +666,15 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_jprod_sio4     = -1, &
           id_jprod_po4      = -1, &
           id_jprod_nh4      = -1, &
+          !id_o2lim          = -1, &
           id_temp_lim       = -1, &
-          id_jprod_n_100  = -1, &
-          id_jprod_n_new_100  = -1, &     
-          id_jprod_n_n2_100 = -1, &
-          id_jzloss_n_100     = -1, &
-          id_jaggloss_n_100   = -1, &
-          id_jvirloss_n_100   = -1, &
-          id_jexuloss_n_100   = -1, &
+          !id_jprod_n_100    = -1, &
           id_jingest_n_100  = -1, &
+          !id_jzloss_n_100   = -1, &
+          !id_jhploss_n_100  = -1, &
           id_jprod_ndet_100 = -1, &
           id_jprod_don_100  = -1, &
-          id_jremin_n_100   = -1, &
-          id_f_n_100        = -1
+          id_jremin_n_100   = -1
 		  
   end type mixotroph
   
@@ -1492,6 +1505,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_phydiaz        = -1, &
           id_phypico        = -1, &
           id_phymisc        = -1, &
+          id_mixo           = -1, &
           id_zmicro         = -1, &
           id_zmeso          = -1, &
           id_talk           = -1, &
@@ -1512,6 +1526,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_chldiaz        = -1, &
           id_chlpico        = -1, &
           id_chlmisc        = -1, &
+          id_chlmixo        = -1, &
           id_poc            = -1, &
           id_pon            = -1, &
           id_pop            = -1, &
@@ -1547,6 +1562,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_ppdiaz         = -1, &
           id_pppico         = -1, &
           id_ppmisc        = -1, &
+          id_ppmixo        = -1, &
           id_bddtdic        = -1, &
           id_bddtdin        = -1, &
           id_bddtdip        = -1, &
@@ -1571,6 +1587,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_phydiazos          = -1, &
           id_phypicoos          = -1, &
           id_phymiscos          = -1, &
+          id_mixoos             = -1, &
           id_zmicroos           = -1, &
           id_zmesoos            = -1, &
           id_talkos             = -1, &
@@ -1590,6 +1607,7 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_chldiazos          = -1, &
           id_chlpicoos          = -1, &
           id_chlmiscos          = -1, &
+          id_chlmixoos          = -1, &
           id_ponos              = -1, &
           id_popos              = -1, &
           id_bfeos              = -1, &
@@ -1607,24 +1625,29 @@ namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange
           id_limndiaz           = -1, &
           id_limnpico           = -1, &
           id_limnmisc           = -1, &
+          id_limnmixo           = -1, &
           id_limirrdiat         = -1, &
           id_limirrdiaz         = -1, &
           id_limirrpico         = -1, &
           id_limirrmisc         = -1, &
+          id_limirrmixo         = -1, &
           id_limfediat          = -1, &
           id_limfediaz          = -1, &
           id_limfepico          = -1, &
           id_limfemisc          = -1, &
+          id_limfemixo          = -1, &
           id_limpdiat           = -1, &
           id_limpdiaz           = -1, &
           id_limppico           = -1, &
           id_limpmisc           = -1, &
+          id_limpmixo           = -1, &
           id_intpp              = -1, &
           id_intppnitrate       = -1, &
           id_intppdiat          = -1, &
           id_intppdiaz          = -1, &
           id_intpppico          = -1, &
           id_intppmisc          = -1, &
+          id_intppmixo          = -1, &
           id_intpbn             = -1, &
           id_intpbp             = -1, &
           id_intpbfe            = -1, &
@@ -2320,6 +2343,7 @@ write (stdlogunit, generic_COBALT_nml)
     vardesc_temp = vardesc("jprod_pdet_Mx","Production of phosphorous detritus by mixotrophs, layer integral",&
                    'h','L','s','mol P m-2 s-1','f')
     mixo(1)%id_jprod_pdet = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("jprod_sidet_Mx","Production of opal detritus by mixotrophs, layer integral",&
                    'h','L','s','mol SiO2 m-2 s-1','f')
@@ -14112,6 +14136,6 @@ write (stdlogunit, generic_COBALT_nml)
 
 
  
-end module generic_COBALT_end
+end module generic_COBALT
 ! TEST COMMENT
 
