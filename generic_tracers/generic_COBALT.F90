@@ -7725,6 +7725,14 @@ write (stdlogunit, generic_COBALT_nml)
           cobalt%jprod_nh4(i,j,k) = cobalt%jprod_nh4(i,j,k) - min(0.0,phyto(n)%mu(i,j,k)*phyto(n)%f_n(i,j,k))
           cobalt%jo2resp_wc(i,j,k) = cobalt%jo2resp_wc(i,j,k) - min(0.0,phyto(n)%mu(i,j,k)*phyto(n)%f_n(i,j,k))*cobalt%o2_2_nh4
        enddo !} n
+
+       ! Mixotrophs
+       mixo(1)%juptake_no3(i,j,k) = max( 0.0, mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)*   & 
+            mixo(1)%no3lim(i,j,k)/(mixo(1)%no3lim(i,j,k)+mixo(1)%nh4lim(i,j,k)+epsln) )
+       mixo(1)%juptake_nh4(i,j,k) = max( 0.0, mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)*   & 
+            mixo(1)%nh4lim(i,j,k)/(mixo(1)%no3lim(i,j,k)+mixo(1)%nh4lim(i,j,k)+epsln) )
+       cobalt%jprod_nh4(i,j,k) = cobalt%jprod_nh4(i,j,k) - min(0.0,mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k))
+       cobalt%jo2resp_wc(i,j,k) = cobalt%jo2resp_wc(i,j,k) - min(0.0,mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k))*cobalt%o2_2_nh4
     enddo;  enddo ; enddo !} i,j,k
     !
     ! Phosphorous uptake
@@ -7741,6 +7749,12 @@ write (stdlogunit, generic_COBALT_nml)
           cobalt%jprod_po4(i,j,k) = cobalt%jprod_po4(i,j,k) - &
                   min(0.0,phyto(n)%mu(i,j,k)*phyto(n)%f_n(i,j,k))*phyto(n)%p_2_n_static
        enddo !} n
+
+       ! Mixotrophs
+       mixo(1)%juptake_po4(i,j,k) = (mixo(1)%juptake_no3(i,j,k)+   &
+            mixo(1)%juptake_nh4(i,j,k)) * mixo(1)%p_2_n_static
+       cobalt%jprod_po4(i,j,k) = cobalt%jprod_po4(i,j,k) - &
+            min(0.0,mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k))*mixo(1)%p_2_n_static
     enddo; enddo ; enddo !} i,j,k
     !
     ! Iron uptake
@@ -7754,6 +7768,14 @@ write (stdlogunit, generic_COBALT_nml)
              phyto(n)%juptake_fe(i,j,k) = 0.0
           endif
        enddo   !} n
+
+       ! Mixotrophs
+       if (mixo(1)%q_fe_2_n(i,j,k).lt.mixo(1)%fe_2_n_max) then
+          mixo(1)%juptake_fe(i,j,k) = mixo(1)%P_C_max*cobalt%expkT(i,j,k)*mixo(1)%f_n(i,j,k)* &
+          mixo(1)%felim(i,j,k)*cobalt%fe_2_n_upt_fac
+       else 
+          mixo(1)%juptake_fe(i,j,k) = 0.0
+       endif
     enddo; enddo ; enddo !} i,j,k
     !
     ! Silicate uptake
