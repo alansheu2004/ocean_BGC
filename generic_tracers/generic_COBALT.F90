@@ -7470,7 +7470,7 @@ write (stdlogunit, generic_COBALT_nml)
     enddo;  enddo ;  enddo !} i,j,k
 !
 !-----------------------------------------------------------------------------------
-! 1: Phytoplankton growth and nutrient uptake calculations
+! 1: Phytoplankton & Mixotroph growth and nutrient uptake calculations
 !-----------------------------------------------------------------------------------
 !
     !
@@ -7486,6 +7486,10 @@ write (stdlogunit, generic_COBALT_nml)
                  max(epsln,phyto(n)%f_n(i,j,k)))
           phyto(n)%q_p_2_n(i,j,k) = phyto(n)%p_2_n_static
        enddo  !} n
+
+       mixo(1)%q_fe_2_n(i,j,k) = max(0.0, mixo(1)%f_fe(i,j,k)/ &
+             max(epsln,mixo(1)%f_n(i,j,k)))
+       mixo(1)%q_p_2_n(i,j,k) = mixo(1)%p_2_n_static
        !
        ! N limitation with NH4 inhibition after Frost and Franzen (1992)
        ! (Note nitrate does not limit diazotroph growth but uptake limitation is used 
@@ -7502,6 +7506,17 @@ write (stdlogunit, generic_COBALT_nml)
                   ( phyto(n)%k_nh4+cobalt%f_nh4(i,j,k)+phyto(n)%k_nh4/phyto(n)%k_no3*cobalt%f_no3(i,j,k) )
           end if
        enddo !} n
+
+       if (scheme_no3_nh4_lim .eq. 1) then
+          mixo(1)%no3lim(i,j,k) = cobalt%f_no3(i,j,k) / &
+               ( (mixo(1)%k_no3+cobalt%f_no3(i,j,k)) * (1.0 + cobalt%f_nh4(i,j,k)/mixo(1)%k_nh4) )
+          mixo(1)%nh4lim(i,j,k) = cobalt%f_nh4(i,j,k) / (mixo(1)%k_nh4 + cobalt%f_nh4(i,j,k))             
+       elseif (scheme_no3_nh4_lim .eq. 2) then
+          mixo(1)%no3lim(i,j,k) = cobalt%f_no3(i,j,k) / &
+               ( mixo(1)%k_no3+cobalt%f_no3(i,j,k)+mixo(1)%k_no3/mixo(1)%k_nh4*cobalt%f_nh4(i,j,k) )
+          mixo(1)%nh4lim(i,j,k) = cobalt%f_nh4(i,j,k) / &
+               ( mixo(1)%k_nh4+cobalt%f_nh4(i,j,k)+mixo(1)%k_nh4/mixo(1)%k_no3*cobalt%f_no3(i,j,k) )
+       end if
        !
        ! O2 inhibition term for diazotrophs
        !
@@ -7518,6 +7533,10 @@ write (stdlogunit, generic_COBALT_nml)
           phyto(n)%def_fe(i,j,k) = phyto(n)%q_fe_2_n(i,j,k)**2.0 / (phyto(n)%k_fe_2_n**2.0 +  &
                phyto(n)%q_fe_2_n(i,j,k)**2.0)
        enddo !} n
+       mixo(1)%po4lim(i,j,k) = cobalt%f_po4(i,j,k) / (mixo(1)%k_po4 + cobalt%f_po4(i,j,k))
+       mixo(1)%felim(i,j,k)  = cobalt%f_fed(i,j,k) / (mixo(1)%k_fed + cobalt%f_fed(i,j,k))
+       mixo(1)%def_fe(i,j,k) = mixo(1)%q_fe_2_n(i,j,k)**2.0 / (mixo(1)%k_fe_2_n**2.0 +  &
+            mixo(1)%q_fe_2_n(i,j,k)**2.0)
     enddo;  enddo ;  enddo !} i,j,k
     !
     ! Calculate nutrient limitation based on the most limiting nutrient (liebig_lim)
@@ -7530,6 +7549,8 @@ write (stdlogunit, generic_COBALT_nml)
           phyto(n)%liebig_lim(i,j,k) = min(phyto(n)%no3lim(i,j,k)+phyto(n)%nh4lim(i,j,k),&
              phyto(n)%po4lim(i,j,k), phyto(n)%def_fe(i,j,k))
        enddo !} n
+       mixo(1)%liebig_lim(i,j,k) = min(mixo(1)%no3lim(i,j,k)+mixo(1)%nh4lim(i,j,k),&
+          mixo(1)%po4lim(i,j,k), mixo(1)%def_fe(i,j,k))
     enddo;  enddo ;  enddo !} i,j,k
     !
     !-----------------------------------------------------------------------
@@ -7592,7 +7613,7 @@ write (stdlogunit, generic_COBALT_nml)
 
 
     !
-    ! Phytoplankton growth rate calculation based on Geider et al. (1997)
+    ! Phytoplankton & Mixotroph growth rate calculation based on Geider et al. (1997)
     !
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec   !{
        cobalt%f_chl(i,j,k) = 0.0
@@ -7619,24 +7640,63 @@ write (stdlogunit, generic_COBALT_nml)
 
        enddo !} n
 
+       ! Mixotrophs
+       P_C_m = mixo(1)%eta * mixo(1)%epsilon * max(mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
+       mixo(1)%theta(i,j,k) = (mixo(1)%thetamax-cobalt%thetamin) / (1.0 +                   &
+            mixo(1)%thetamax*mixo(1)%alpha*cobalt%f_irr_mem(i,j,k)*0.5 /  &
+            P_C_m) + cobalt%thetamin
+       cobalt%f_chl(i,j,k) = cobalt%f_chl(i,j,k)+cobalt%c_2_n*12.0e6*mixo(1)%theta(i,j,k)*   &
+            mixo(1)%f_n(i,j,k)
+       mixo(1)%irrlim(i,j,k) = (1.0-exp(-mixo(1)%alpha*cobalt%irr_inst(i,j,k)*              &
+            mixo(1)%theta(i,j,k)/P_C_m))
+
+       ! calculate the growth rate
+       mixo(1)%mu(i,j,k) = P_C_m / (1.0 + cobalt%zeta) * mixo(1)%irrlim(i,j,k) - &
+            cobalt%expkT(i,j,k)*mixo(1)%bresp*                                      &
+            mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
+
+       ! calculate net production by mixotroph group
+       mixo(1)%jprod_n(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)
+
+       mixo(1)%mu_mix(i,j,k) = mixo(1)%mu(i,j,k)
+
     enddo;  enddo ; enddo !} i,j,k
 
-    do j = jsc, jec ; do i = isc, iec ; do n = 1,NUM_PHYTO !{
-       kblt = 0 ; tmp_mu_ML = 0.0 ; tmp_hblt = 0.0
-       do k = 1, nk !{
-          if ((k == 1) .or. (tmp_hblt .lt. hblt_depth(i,j))) then !{
-             kblt = kblt+1
-             tmp_mu_ML = tmp_mu_ML + phyto(n)%mu_mix(i,j,k) * dzt(i,j,k)
-             tmp_hblt = tmp_hblt + dzt(i,j,k)
-          endif !}
-       enddo !} k-loop
-       phyto(n)%mu_mix(i,j,1:kblt) = tmp_mu_ML / max(epsln,tmp_hblt)
-    enddo;  enddo; enddo !} i,j,n
+    do j = jsc, jec ; do i = isc, iec !{ 
+          do n = 1,NUM_PHYTO !{
+               kblt = 0 ; tmp_mu_ML = 0.0 ; tmp_hblt = 0.0
+               do k = 1, nk !{
+                    if ((k == 1) .or. (tmp_hblt .lt. hblt_depth(i,j))) then !{
+                    kblt = kblt+1
+                    tmp_mu_ML = tmp_mu_ML + phyto(n)%mu_mix(i,j,k) * dzt(i,j,k)
+                    tmp_hblt = tmp_hblt + dzt(i,j,k)
+                    endif !}
+               enddo !} k-loop
+               phyto(n)%mu_mix(i,j,1:kblt) = tmp_mu_ML / max(epsln,tmp_hblt)
+          enddo;  !} n
 
-    do k = 1, nk ; do j = jsc, jec ; do i = isc, iec; do n = 1,NUM_PHYTO !{        
-       phyto(n)%f_mu_mem(i,j,k) = phyto(n)%f_mu_mem(i,j,k) + (phyto(n)%mu_mix(i,j,k) - &
-             phyto(n)%f_mu_mem(i,j,k))*min(1.0,cobalt%gamma_mu_mem*dt)*grid_tmask(i,j,k)
-    enddo; enddo ; enddo; enddo !} i,j,k,n
+          ! Mixotrophs
+          kblt = 0 ; tmp_mu_ML = 0.0 ; tmp_hblt = 0.0
+          do k = 1, nk !{
+               if ((k == 1) .or. (tmp_hblt .lt. hblt_depth(i,j))) then !{
+               kblt = kblt+1
+               tmp_mu_ML = tmp_mu_ML + mixo(1)%mu_mix(i,j,k) * dzt(i,j,k)
+               tmp_hblt = tmp_hblt + dzt(i,j,k)
+               endif !}
+          enddo !} k-loop
+          mixo(1)%mu_mix(i,j,1:kblt) = tmp_mu_ML / max(epsln,tmp_hblt)
+     enddo; enddo !} i,j
+
+    do k = 1, nk ; do j = jsc, jec ; do i = isc, iec !{
+          do n = 1,NUM_PHYTO !{        
+               phyto(n)%f_mu_mem(i,j,k) = phyto(n)%f_mu_mem(i,j,k) + (phyto(n)%mu_mix(i,j,k) - &
+                    phyto(n)%f_mu_mem(i,j,k))*min(1.0,cobalt%gamma_mu_mem*dt)*grid_tmask(i,j,k)
+          enddo;  !} n
+
+          ! Mixotrophs
+          mixo(1)%f_mu_mem(i,j,k) = mixo(1)%f_mu_mem(i,j,k) + (mixo(1)%mu_mix(i,j,k) - &
+               mixo(1)%f_mu_mem(i,j,k))*min(1.0,cobalt%gamma_mu_mem*dt)*grid_tmask(i,j,k)
+     enddo ; enddo; enddo !} i,j,k
 
     !-----------------------------------------------------------------------
     ! 1.3: Nutrient uptake calculations 
