@@ -747,11 +747,14 @@ module generic_COBALT
   ! define three zooplankton types
   integer, parameter :: NUM_ZOO = 3
   type(zooplankton), dimension(NUM_ZOO) :: zoo
-	  
+	
+  ! define one mixotroph types
+  integer, parameter :: NUM_MIXO = 1
   type(mixotroph), dimension(1) :: mixo
 
   type(bacteria), dimension(1) :: bact
 
+  integer, parameter :: NUM_PRED = NUM_ZOO + NUM_MIXO
   integer, parameter :: NUM_PREY = 9
 
   type generic_COBALT_type
@@ -7206,10 +7209,10 @@ write (stdlogunit, generic_COBALT_nml)
     real, dimension(:), Allocatable   :: tmp_irr_band
     real, dimension(:,:), Allocatable :: rho_dzt_100, rho_dzt_200
     real, dimension(:,:,:), Allocatable :: z_remin_ramp
-    real,dimension(1:NUM_ZOO,1:NUM_PREY) :: ipa_matrix,pa_matrix,ingest_matrix
+    real,dimension(1:NUM_PRED,1:NUM_PREY) :: ipa_matrix,pa_matrix,ingest_matrix
     real,dimension(1:NUM_PREY) :: hp_ipa_vec,hp_pa_vec,hp_ingest_vec
     real,dimension(1:NUM_PREY) :: prey_vec,prey_p2n_vec,prey_fe2n_vec,prey_si2n_vec
-    real,dimension(1:NUM_ZOO)  :: tot_prey
+    real,dimension(1:NUM_PRED)  :: tot_prey
     real :: tot_prey_hp, sw_fac_denom, assim_eff
     real :: bact_uptake_ratio, vmax_bact, growth_ratio
     real :: fpoc_btm, log_fpoc_btm
@@ -7419,6 +7422,12 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_get_values(tracer_list,'nsmz'    ,'field',zoo(1)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
     call g_tracer_get_values(tracer_list,'nmdz'    ,'field',zoo(2)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
     call g_tracer_get_values(tracer_list,'nlgz'    ,'field',zoo(3)%f_n(:,:,:) ,isd,jsd,ntau=tau,positive=.true.)
+    !
+    ! mixotroph fields
+    !
+    call g_tracer_get_values(tracer_list,'femx','field',mixo(1)%f_fe(:,:,:),isd,jsd,ntau=tau,positive=.true.)
+    call g_tracer_get_values(tracer_list,'nmx' ,'field',mixo(1)%f_n(:,:,:),isd,jsd,ntau=tau,positive=.true.)
+    call g_tracer_get_values(tracer_list,'mu_mem_nmx' ,'field',mixo(1)%f_mu_mem,isd,jsd,ntau=1)
     !
     ! bacteria
     !
