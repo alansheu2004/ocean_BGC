@@ -202,6 +202,7 @@ module generic_COBALT
   real    :: irr_inhibit = 10.
   real    :: gamma_nitrif= 3.5e6 !month(-1)
   real    :: k_nh3_nitrif= 3.1e-9 !mol/kg
+  real    :: imbalance_tolerance=1.0e-10 !the tolerance for non-conservation in C,N,P,Sc,Fe
 
   integer :: scheme_no3_nh4_lim = 2 !1-Frost and Franzen (1992)
                                     !2-O'Neill
@@ -210,10 +211,9 @@ module generic_COBALT
                                !2-update with no temperature dependence
                                !3-update with temperature dependence
 
-namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange, scheme_nitrif, &
-     k_nh4_small,k_nh4_large,k_nh4_diazo,scheme_no3_nh4_lim,k_no3_small,k_no3_large,k_no3_diazo, &
-     o2_min_nit,k_o2_nit,irr_inhibit,k_nh3_nitrif, &
-     gamma_nitrif
+  namelist /generic_COBALT_nml/ do_14c, co2_calc, debug, do_nh3_atm_ocean_exchange, scheme_nitrif, &
+  k_nh4_small,k_nh4_large,k_nh4_diazo,scheme_no3_nh4_lim,k_no3_small,k_no3_large,k_no3_diazo, &
+  o2_min_nit,k_o2_nit,irr_inhibit,k_nh3_nitrif,gamma_nitrif,imbalance_tolerance
 
   ! Declare phytoplankton, zooplankton and cobalt variable types, which contain
   ! the vast majority of all variables used in this module. 
@@ -6941,11 +6941,11 @@ write (stdlogunit, generic_COBALT_nml)
          units      = 'sec-1',         &
          prog       = .false.              )
 
-    call g_tracer_add(tracer_list,package_name,&
-         name       = 'mu_mem_nmx',           &
-         longname   = 'Mixotroph Growth memory', &
-         units      = 'sec-1',         &
-         prog       = .false.              )
+!     call g_tracer_add(tracer_list,package_name,&
+!          name       = 'mu_mem_nmx',           &
+!          longname   = 'Mixotroph Growth memory', &
+!          units      = 'sec-1',         &
+!          prog       = .false.              )
 
     if (do_nh3_atm_ocean_exchange .or. scheme_nitrif.eq.2 .or. scheme_nitrif.eq.3) then
        call g_tracer_add(tracer_list,package_name,&
