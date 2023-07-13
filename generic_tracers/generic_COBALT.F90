@@ -556,7 +556,8 @@ module generic_COBALT
           juptake_nh4 , & 
           juptake_no3 , & 
           juptake_po4 , & 
-          jprod_n     , & 
+          jprod_n_auto     , & 
+          jprod_n_hetero     , & 
           liebig_lim  , & 
           mu          , &
           f_mu_mem    , &
@@ -7666,7 +7667,7 @@ write (stdlogunit, generic_COBALT_nml)
             mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
 
        ! calculate net production by mixotroph group
-       mixo(1)%jprod_n(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)
+       mixo(1)%jprod_n_auto(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)
 
        mixo(1)%mu_mix(i,j,k) = mixo(1)%mu(i,j,k)
 
@@ -8549,10 +8550,10 @@ write (stdlogunit, generic_COBALT_nml)
 
        ! Mixotrophs
        assim_eff = 1.0-mixo(1)%phi_det-mixo(1)%phi_ldon-mixo(1)%phi_sldon-mixo(1)%phi_srdon
-       mixo(1)%jprod_n(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k) - &
+       mixo(1)%jprod_n_hetero(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k) - &
                                      mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))* &
                                      mixo(1)%temp_lim(i,j,k)*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
-       mixo(1)%jprod_n(i,j,k) = min(mixo(1)%jprod_n(i,j,k), &
+       mixo(1)%jprod_n_hetero(i,j,k) = min(mixo(1)%jprod_n_hetero(i,j,k), &
                                      assim_eff*mixo(1)%jingest_p(i,j,k)/mixo(1)%q_p_2_n(i,j,k))
   
        !
@@ -8560,12 +8561,12 @@ write (stdlogunit, generic_COBALT_nml)
        ! or production of dissolved organic material is excreted as nh4 or po4.  If production
        ! is negative, zooplankton are lost to large detritus 
        !
-       if (mixo(1)%jprod_n(i,j,k) .gt. 0.0) then 
+       if (mixo(1)%jprod_n_hetero(i,j,k) .gt. 0.0) then 
             mixo(1)%jprod_nh4(i,j,k) =  mixo(1)%jingest_n(i,j,k) - mixo(1)%jprod_ndet(i,j,k) -  &
-                                     mixo(1)%jprod_n(i,j,k) - mixo(1)%jprod_ldon(i,j,k) - &
+                                     mixo(1)%jprod_n_hetero(i,j,k) - mixo(1)%jprod_ldon(i,j,k) - &
                                      mixo(1)%jprod_sldon(i,j,k) - mixo(1)%jprod_srdon(i,j,k)
             mixo(1)%jprod_po4(i,j,k) =  mixo(1)%jingest_p(i,j,k) - mixo(1)%jprod_pdet(i,j,k) - & 
-                                     mixo(1)%jprod_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k) - mixo(1)%jprod_ldop(i,j,k) -  &
+                                     mixo(1)%jprod_n_hetero(i,j,k)*mixo(1)%q_p_2_n(i,j,k) - mixo(1)%jprod_ldop(i,j,k) -  &
                                      mixo(1)%jprod_sldop(i,j,k) - mixo(1)%jprod_srdop(i,j,k)
        else
             ! None of the ingestion material goes to zooplankton production
@@ -8579,10 +8580,10 @@ write (stdlogunit, generic_COBALT_nml)
             ! The negative production (i.e., mortality) is lost to large detritus. Update values
             ! for zooplankton and for total.
   
-            mixo(1)%jprod_ndet(i,j,k) = mixo(1)%jprod_ndet(i,j,k) - mixo(1)%jprod_n(i,j,k)
-            mixo(1)%jprod_pdet(i,j,k) = mixo(1)%jprod_pdet(i,j,k) - mixo(1)%jprod_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
-            cobalt%jprod_ndet(i,j,k) = cobalt%jprod_ndet(i,j,k) - mixo(1)%jprod_n(i,j,k)
-            cobalt%jprod_pdet(i,j,k) = cobalt%jprod_pdet(i,j,k) - mixo(1)%jprod_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k) 
+            mixo(1)%jprod_ndet(i,j,k) = mixo(1)%jprod_ndet(i,j,k) - mixo(1)%jprod_n_hetero(i,j,k)
+            mixo(1)%jprod_pdet(i,j,k) = mixo(1)%jprod_pdet(i,j,k) - mixo(1)%jprod_n_hetero(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
+            cobalt%jprod_ndet(i,j,k) = cobalt%jprod_ndet(i,j,k) - mixo(1)%jprod_n_hetero(i,j,k)
+            cobalt%jprod_pdet(i,j,k) = cobalt%jprod_pdet(i,j,k) - mixo(1)%jprod_n_hetero(i,j,k)*mixo(1)%q_p_2_n(i,j,k) 
        endif
   
        ! cumulative production of inorganic nutrients 
@@ -13365,7 +13366,8 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(mixo(1)%juptake_nh4(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_nh4    = 0.0
     allocate(mixo(1)%juptake_no3(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_no3    = 0.0
     allocate(mixo(1)%juptake_po4(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_po4    = 0.0
-    allocate(mixo(1)%jprod_n(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n        = 0.0
+    allocate(mixo(1)%jprod_n_auto(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n_auto       = 0.0
+    allocate(mixo(1)%jprod_n_hetero(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_n_hetero     = 0.0
     allocate(mixo(1)%liebig_lim(isd:ied,jsd:jed,nk))   ; mixo(1)%liebig_lim     = 0.0
     allocate(mixo(1)%mu(isd:ied,jsd:jed,nk))           ; mixo(1)%mu             = 0.0
     allocate(mixo(1)%po4lim(isd:ied,jsd:jed,nk))       ; mixo(1)%po4lim         = 0.0
@@ -13395,7 +13397,6 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(mixo(1)%jprod_sio4(isd:ied,jsd:jed,nk))   ; mixo(1)%jprod_sio4      = 0.0
     allocate(mixo(1)%jprod_po4(isd:ied,jsd:jed,nk))     ; mixo(1)%jprod_po4      = 0.0
     allocate(mixo(1)%jprod_nh4(isd:ied,jsd:jed,nk))     ; mixo(1)%jprod_nh4      = 0.0
-    allocate(mixo(1)%jprod_n(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n         = 0.0
     allocate(mixo(1)%o2lim(isd:ied,jsd:jed,nk))        ; mixo(1)%o2lim           = 0.0
     allocate(mixo(1)%temp_lim(isd:ied,jsd:jed,nk))      ; mixo(1)%temp_lim       = 0.0
 		
@@ -13916,7 +13917,8 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(mixo(1)%juptake_nh4)
     deallocate(mixo(1)%juptake_no3)
     deallocate(mixo(1)%juptake_po4)
-    deallocate(mixo(1)%jprod_n)
+    deallocate(mixo(1)%jprod_n_auto)
+    deallocate(mixo(1)%jprod_n_hetero)
     deallocate(mixo(1)%liebig_lim)
     deallocate(mixo(1)%mu)
     deallocate(mixo(1)%po4lim)
@@ -13946,7 +13948,6 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(mixo(1)%jprod_sio4)
     deallocate(mixo(1)%jprod_po4)
     deallocate(mixo(1)%jprod_nh4)
-    deallocate(mixo(1)%jprod_n)
     deallocate(mixo(1)%o2lim)
     deallocate(mixo(1)%temp_lim)
     deallocate(mixo(1)%jprod_n_100)
