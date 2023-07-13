@@ -8150,7 +8150,7 @@ write (stdlogunit, generic_COBALT_nml)
        mixo(1)%jingest_n(i,j,k) = ingest_matrix(m,3) + ingest_matrix(m,5)
        mixo(1)%jingest_p(i,j,k) = ingest_matrix(m,3)*prey_p2n_vec(3) + &
                                  ingest_matrix(m,5)*prey_p2n_vec(5)
-       mixo(1)%jingest_fe(i,j,k) = ingest_matrix(m,3)*prey_fe2n_vec(3) + &
+       mixo(1)%jingest_fe(i,j,k) = ingest_matrix(m,3)*prey_fe2n_vec(3)
 
 
        ! Total Filter Feeding
@@ -8284,7 +8284,7 @@ write (stdlogunit, generic_COBALT_nml)
        mixo(1)%jaggloss_n(i,j,k) = mixo(1)%agg_lim(i,j,k)*mixo(1)%agg*mixo(1)%f_n(i,j,k)**2.0 
        mixo(1)%jaggloss_p(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
        mixo(1)%jaggloss_fe(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_fe_2_n(i,j,k)
-       mixo(1)%jaggloss_sio2(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_si_2_n(i,j,k)
+       !mixo(1)%jaggloss_sio2(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_si_2_n(i,j,k)
 
        !
        ! 3.2.2 Calculate phytoplankton, mixotroph, and bacterial losses to viruses
@@ -8300,7 +8300,7 @@ write (stdlogunit, generic_COBALT_nml)
        mixo(1)%jvirloss_n(i,j,k) = bact(1)%temp_lim(i,j,k)*mixo(1)%vir*mixo(1)%f_n(i,j,k)**2.0 
        mixo(1)%jvirloss_p(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
        mixo(1)%jvirloss_fe(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_fe_2_n(i,j,k)
-       mixo(1)%jvirloss_sio2(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_si_2_n(i,j,k)
+       !mixo(1)%jvirloss_sio2(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_si_2_n(i,j,k)
 
        bact(1)%jvirloss_n(i,j,k) = bact(1)%temp_lim(i,j,k)*bact(1)%vir*bact(1)%f_n(i,j,k)**2.0
        bact(1)%jvirloss_p(i,j,k) = bact(1)%jvirloss_n(i,j,k)*bact(1)%q_p_2_n
@@ -8367,6 +8367,30 @@ write (stdlogunit, generic_COBALT_nml)
            cobalt%jprod_sidet(i,j,k) = cobalt%jprod_sidet(i,j,k) + zoo(m)%jprod_sidet(i,j,k)
        enddo !} m
 
+       mixo(1)%jprod_ndet(i,j,k) = mixo(1)%phi_det*mixo(1)%jingest_n(i,j,k)
+       mixo(1)%jprod_pdet(i,j,k) = mixo(1)%phi_det*mixo(1)%jingest_p(i,j,k)
+       mixo(1)%jprod_sldon(i,j,k) = mixo(1)%phi_sldon*mixo(1)%jingest_n(i,j,k)
+       mixo(1)%jprod_ldon(i,j,k) = mixo(1)%phi_ldon*mixo(1)%jingest_n(i,j,k)
+       mixo(1)%jprod_srdon(i,j,k) = mixo(1)%phi_srdon*mixo(1)%jingest_n(i,j,k)
+       mixo(1)%jprod_sldop(i,j,k) = mixo(1)%phi_sldop*mixo(1)%jingest_p(i,j,k)
+       mixo(1)%jprod_ldop(i,j,k) = mixo(1)%phi_ldop*mixo(1)%jingest_p(i,j,k)
+       mixo(1)%jprod_srdop(i,j,k) = mixo(1)%phi_srdop*mixo(1)%jingest_p(i,j,k)
+       mixo(1)%jprod_fedet(i,j,k) = mixo(1)%phi_det*mixo(1)%jingest_fe(i,j,k)
+       mixo(1)%jprod_sidet(i,j,k) = mixo(1)%phi_det*mixo(1)%jingest_sio2(i,j,k)
+  
+  
+       ! augment cumulative production with zooplankton terms
+       cobalt%jprod_ndet(i,j,k) = cobalt%jprod_ndet(i,j,k) + mixo(1)%jprod_ndet(i,j,k)
+       cobalt%jprod_pdet(i,j,k) = cobalt%jprod_pdet(i,j,k) + mixo(1)%jprod_pdet(i,j,k)
+       cobalt%jprod_sldon(i,j,k) = cobalt%jprod_sldon(i,j,k) + mixo(1)%jprod_sldon(i,j,k)
+       cobalt%jprod_ldon(i,j,k) = cobalt%jprod_ldon(i,j,k) + mixo(1)%jprod_ldon(i,j,k)
+       cobalt%jprod_srdon(i,j,k) = cobalt%jprod_srdon(i,j,k) + mixo(1)%jprod_srdon(i,j,k)
+       cobalt%jprod_sldop(i,j,k) = cobalt%jprod_sldop(i,j,k) + mixo(1)%jprod_sldop(i,j,k)
+       cobalt%jprod_ldop(i,j,k) = cobalt%jprod_ldop(i,j,k) + mixo(1)%jprod_ldop(i,j,k)
+       cobalt%jprod_srdop(i,j,k) = cobalt%jprod_srdop(i,j,k) + mixo(1)%jprod_srdop(i,j,k)
+       cobalt%jprod_fedet(i,j,k) = cobalt%jprod_fedet(i,j,k) + mixo(1)%jprod_fedet(i,j,k)
+       cobalt%jprod_sidet(i,j,k) = cobalt%jprod_sidet(i,j,k) + mixo(1)%jprod_sidet(i,j,k)
+
        !
        ! Production of detritus and dissolved organic material from higher predator egestion 
        ! (did not track individual terms, just add to cumulative total)
@@ -8388,6 +8412,11 @@ write (stdlogunit, generic_COBALT_nml)
            cobalt%jprod_sidet(i,j,k) = cobalt%jprod_sidet(i,j,k) + phyto(m)%jaggloss_sio2(i,j,k)
        enddo !} m
 
+       cobalt%jprod_ndet(i,j,k) = cobalt%jprod_ndet(i,j,k) + mixo(1)%jaggloss_n(i,j,k)
+       cobalt%jprod_pdet(i,j,k) = cobalt%jprod_pdet(i,j,k) + mixo(1)%jaggloss_p(i,j,k)
+       cobalt%jprod_fedet(i,j,k) = cobalt%jprod_fedet(i,j,k) + mixo(1)%jaggloss_fe(i,j,k)
+       !cobalt%jprod_sidet(i,j,k) = cobalt%jprod_sidet(i,j,k) + mixo(1)%jaggloss_sio2(i,j,k)
+
        !
        ! Sources from viral lysis of phytoplankton (0 in default formulation) and exudation
        !
@@ -8406,6 +8435,17 @@ write (stdlogunit, generic_COBALT_nml)
            cobalt%jprod_sio4(i,j,k) = cobalt%jprod_sio4(i,j,k) + phyto(m)%jvirloss_sio2(i,j,k)
        enddo !} m
 
+       cobalt%jprod_ldon(i,j,k) = cobalt%jprod_ldon(i,j,k) + cobalt%lysis_phi_ldon*mixo(1)%jvirloss_n(i,j,k) + &
+                                mixo(1)%jexuloss_n(i,j,k) 
+       cobalt%jprod_sldon(i,j,k) = cobalt%jprod_sldon(i,j,k) + cobalt%lysis_phi_sldon*mixo(1)%jvirloss_n(i,j,k)
+       cobalt%jprod_srdon(i,j,k) = cobalt%jprod_srdon(i,j,k) + cobalt%lysis_phi_srdon*mixo(1)%jvirloss_n(i,j,k)
+       cobalt%jprod_ldop(i,j,k) = cobalt%jprod_ldop(i,j,k) + cobalt%lysis_phi_ldop*mixo(1)%jvirloss_p(i,j,k) + &
+                                mixo(1)%jexuloss_p(i,j,k)
+       cobalt%jprod_sldop(i,j,k) = cobalt%jprod_sldop(i,j,k) + cobalt%lysis_phi_sldop*mixo(1)%jvirloss_p(i,j,k)
+       cobalt%jprod_srdop(i,j,k) = cobalt%jprod_srdop(i,j,k) + cobalt%lysis_phi_srdop*mixo(1)%jvirloss_p(i,j,k)
+       cobalt%jprod_fed(i,j,k)   = cobalt%jprod_fed(i,j,k)   + mixo(1)%jvirloss_fe(i,j,k) + &
+                                mixo(1)%jexuloss_fe(i,j,k) 
+       !cobalt%jprod_sio4(i,j,k) = cobalt%jprod_sio4(i,j,k) + mixo(1)%jvirloss_sio2(i,j,k)
 
        !
        ! Sources of dissolved organic material from viral lysis due to bacteria 
@@ -8496,6 +8536,62 @@ write (stdlogunit, generic_COBALT_nml)
           cobalt%jprod_sio4(i,j,k) = cobalt%jprod_sio4(i,j,k) + zoo(m)%jprod_sio4(i,j,k)
  
        enddo !} m
+
+       ! Mixotrophs
+       assim_eff = 1.0-mixo(1)%phi_det-mixo(1)%phi_ldon-mixo(1)%phi_sldon-mixo(1)%phi_srdon
+       mixo(1)%jprod_n(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k) - &
+                                     mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))* &
+                                     mixo(1)%temp_lim(i,j,k)*mixo(1)%bresp*mixo(1)%f_n(i,j,k)
+       mixo(1)%jprod_n(i,j,k) = min(mixo(1)%jprod_n(i,j,k), &
+                                     assim_eff*mixo(1)%jingest_p(i,j,k)/mixo(1)%q_p_2_n(i,j,k))
+  
+       !
+       ! Ingested material that does not go to zooplankton production, detrital production
+       ! or production of dissolved organic material is excreted as nh4 or po4.  If production
+       ! is negative, zooplankton are lost to large detritus 
+       !
+       if (mixo(1)%jprod_n(i,j,k) .gt. 0.0) then 
+            mixo(1)%jprod_nh4(i,j,k) =  mixo(1)%jingest_n(i,j,k) - mixo(1)%jprod_ndet(i,j,k) -  &
+                                     mixo(1)%jprod_n(i,j,k) - mixo(1)%jprod_ldon(i,j,k) - &
+                                     mixo(1)%jprod_sldon(i,j,k) - mixo(1)%jprod_srdon(i,j,k)
+            mixo(1)%jprod_po4(i,j,k) =  mixo(1)%jingest_p(i,j,k) - mixo(1)%jprod_pdet(i,j,k) - & 
+                                     mixo(1)%jprod_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k) - mixo(1)%jprod_ldop(i,j,k) -  &
+                                     mixo(1)%jprod_sldop(i,j,k) - mixo(1)%jprod_srdop(i,j,k)
+       else
+            ! None of the ingestion material goes to zooplankton production
+            mixo(1)%jprod_nh4(i,j,k) =  mixo(1)%jingest_n(i,j,k) - mixo(1)%jprod_ndet(i,j,k) - & 
+                                     mixo(1)%jprod_ldon(i,j,k) - mixo(1)%jprod_sldon(i,j,k) - & 
+                                     mixo(1)%jprod_srdon(i,j,k)
+            mixo(1)%jprod_po4(i,j,k) =  mixo(1)%jingest_p(i,j,k) - mixo(1)%jprod_pdet(i,j,k) - &
+                                     mixo(1)%jprod_ldop(i,j,k) - mixo(1)%jprod_sldop(i,j,k) - & 
+                                     mixo(1)%jprod_srdop(i,j,k)
+  
+            ! The negative production (i.e., mortality) is lost to large detritus. Update values
+            ! for zooplankton and for total.
+  
+            mixo(1)%jprod_ndet(i,j,k) = mixo(1)%jprod_ndet(i,j,k) - mixo(1)%jprod_n(i,j,k)
+            mixo(1)%jprod_pdet(i,j,k) = mixo(1)%jprod_pdet(i,j,k) - mixo(1)%jprod_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
+            cobalt%jprod_ndet(i,j,k) = cobalt%jprod_ndet(i,j,k) - mixo(1)%jprod_n(i,j,k)
+            cobalt%jprod_pdet(i,j,k) = cobalt%jprod_pdet(i,j,k) - mixo(1)%jprod_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k) 
+       endif
+  
+       ! cumulative production of inorganic nutrients 
+       cobalt%jprod_nh4(i,j,k) = cobalt%jprod_nh4(i,j,k) + mixo(1)%jprod_nh4(i,j,k)
+       cobalt%jprod_po4(i,j,k) = cobalt%jprod_po4(i,j,k) + mixo(1)%jprod_po4(i,j,k)
+       cobalt%jo2resp_wc(i,j,k) = cobalt%jo2resp_wc(i,j,k) + mixo(1)%jprod_nh4(i,j,k)*cobalt%o2_2_nh4
+
+       !
+       ! Any ingested iron that is not allocated to detritus is routed back to the
+       ! dissolved pool.       
+       !
+       mixo(1)%jprod_fed(i,j,k) = (1.0 - mixo(1)%phi_det)*mixo(1)%jingest_fe(i,j,k)
+       cobalt%jprod_fed(i,j,k) = cobalt%jprod_fed(i,j,k) + mixo(1)%jprod_fed(i,j,k)
+       !
+       ! Any ingested opal that is not allocated to detritus is assumed to undergo
+       ! rapid dissolution to dissolved silica
+       !
+       mixo(1)%jprod_sio4(i,j,k) = (1.0 - mixo(1)%phi_det)*mixo(1)%jingest_sio2(i,j,k)
+       cobalt%jprod_sio4(i,j,k) = cobalt%jprod_sio4(i,j,k) + mixo(1)%jprod_sio4(i,j,k)
 
        !
        ! Excretion by higher predators
