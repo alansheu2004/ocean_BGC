@@ -511,7 +511,8 @@ module generic_COBALT
           epsilon,          & ! mixotrophy preference parameter
           eta                 ! mixotrophy inefficiency factor
      real, ALLOCATABLE, dimension(:,:)  :: &
-          jprod_n_100,      & 
+          jprod_n_auto_100, & 
+          jprod_n_hetero_100,& 
           jprod_n_new_100,  & 
           jzloss_n_100,     &
           jaggloss_n_100,   &
@@ -9784,7 +9785,7 @@ write (stdlogunit, generic_COBALT_nml)
              cobalt%jprod_nh4(i,j,k)*rho_dzt(i,j,k) * grid_tmask(i,j,k)
 
           cobalt%wc_vert_int_juptake_no3(i,j) = cobalt%wc_vert_int_juptake_no3(i,j) +                     &
-             (phyto(1)%juptake_no3(i,j,k)+phyto(2)%juptake_no3(i,j,k)+phyto(3)%juptake_no3(i,j,k))* &
+             (phyto(1)%juptake_no3(i,j,k)+phyto(2)%juptake_no3(i,j,k)+phyto(3)%juptake_no3(i,j,k)+mixo(1)%juptake_no3(i,j,k))* &
              rho_dzt(i,j,k) * grid_tmask(i,j,k)
           cobalt%wc_vert_int_nfix(i,j) = cobalt%wc_vert_int_nfix(i,j) + phyto(DIAZO)%juptake_n2(i,j,k) *&
              rho_dzt(i,j,k) * grid_tmask(i,j,k)
@@ -9917,6 +9918,25 @@ write (stdlogunit, generic_COBALT_nml)
        cobalt%jprod_diat_100(i,j) = phyto(LARGE)%jprod_n(i,j,1)*phyto(LARGE)%silim(i,j,1)*rho_dzt(i,j,1)
 ! added juptake_sio4_100 (large only)
        phyto(LARGE)%juptake_sio4_100(i,j) = phyto(LARGE)%juptake_sio4(i,j,1) * rho_dzt(i,j,1)
+
+       ! Mixotrophs
+       mixo(1)%jprod_n_auto_100(i,j) = mixo(1)%jprod_n_auto(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jprod_n_new_100(i,j) = mixo(1)%juptake_no3(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jzloss_n_100(i,j) = mixo(1)%jzloss_n(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jexuloss_n_100(i,j) = mixo(1)%jexuloss_n(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%f_n_100(i,j) = mixo(1)%f_n(i,j,1) * rho_dzt(i,j,1)
+! added juptake_fe_100 
+       mixo(1)%juptake_fe_100(i,j) = mixo(1)%juptake_fe(i,j,1) * rho_dzt(i,j,1)
+! CAS: added juptake_po4_100
+       mixo(1)%juptake_po4_100(i,j) = mixo(1)%juptake_po4(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jvirloss_n_100(i,j) = mixo(1)%jvirloss_n(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jaggloss_n_100(i,j) = mixo(1)%jaggloss_n(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jprod_n_hetero_100(i,j) = mixo(1)%jprod_n_hetero(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jingest_n_100(i,j) = mixo(1)%jingest_n(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jremin_n_100(i,j) = mixo(1)%jprod_nh4(i,j,1) * rho_dzt(i,j,1)
+       mixo(1)%jprod_don_100(i,j) = (mixo(1)%jprod_ldon(i,j,1) + mixo(1)%jprod_sldon(i,j,1) + &
+             mixo(1)%jprod_srdon(i,j,1))  * rho_dzt(i,j,1)
+
        do n = 1, NUM_ZOO  !{
           zoo(n)%jprod_n_100(i,j) = zoo(n)%jprod_n(i,j,1) * rho_dzt(i,j,1)
           zoo(n)%jingest_n_100(i,j) = zoo(n)%jingest_n(i,j,1) * rho_dzt(i,j,1)
@@ -10019,6 +10039,33 @@ write (stdlogunit, generic_COBALT_nml)
 ! added juptake_sio4_100 (large only)
              phyto(LARGE)%juptake_sio4_100(i,j) = phyto(LARGE)%juptake_sio4_100(i,j) + &
                  phyto(LARGE)%juptake_sio4(i,j,k)*rho_dzt(i,j,k)
+          
+             ! Mixotrophs
+                mixo(1)%jprod_n_auto_100(i,j) = mixo(1)%jprod_n_auto_100(i,j) + mixo(1)%jprod_n_auto(i,j,k)* & 
+                   rho_dzt(i,j,k)
+                mixo(1)%jprod_n_new_100(i,j) = mixo(1)%jprod_n_new_100(i,j) + mixo(1)%juptake_no3(i,j,k)* &
+                   rho_dzt(i,j,k)
+                mixo(1)%jzloss_n_100(i,j) = mixo(1)%jzloss_n_100(i,j) + mixo(1)%jzloss_n(i,j,k)* &
+                   rho_dzt(i,j,k)
+                mixo(1)%jexuloss_n_100(i,j) = mixo(1)%jexuloss_n_100(i,j) + mixo(1)%jexuloss_n(i,j,k)* &
+                   rho_dzt(i,j,k)
+                mixo(1)%f_n_100(i,j) = mixo(1)%f_n_100(i,j) + mixo(1)%f_n(i,j,k)*rho_dzt(i,j,k) 
+! added juptake_fe_100 
+                mixo(1)%juptake_fe_100(i,j) = mixo(1)%juptake_fe_100(i,j) + mixo(1)%juptake_fe(i,j,k)*rho_dzt(i,j,k) 
+! CAS: added juptake_po4_100
+                mixo(1)%juptake_po4_100(i,j) = mixo(1)%juptake_po4_100(i,j) + mixo(1)%juptake_po4(i,j,k)*rho_dzt(i,j,k)          
+             mixo(1)%jvirloss_n_100(i,j) = mixo(1)%jvirloss_n_100(i,j) + &
+                 mixo(1)%jvirloss_n(i,j,k)*rho_dzt(i,j,k)
+             mixo(1)%jaggloss_n_100(i,j) = mixo(1)%jaggloss_n_100(i,j) + &
+                 mixo(1)%jaggloss_n(i,j,k)*rho_dzt(i,j,k)
+                mixo(1)%jprod_n_hetero_100(i,j) = mixo(1)%jprod_n_hetero_100(i,j) + mixo(1)%jprod_n_hetero(i,j,k)* &
+                   rho_dzt(i,j,k)
+                mixo(1)%jingest_n_100(i,j) = mixo(1)%jingest_n_100(i,j) + mixo(1)%jingest_n(i,j,k)* &
+                   rho_dzt(i,j,k)
+                mixo(1)%jremin_n_100(i,j) = mixo(1)%jremin_n_100(i,j) + mixo(1)%jprod_nh4(i,j,k)* &
+                   rho_dzt(i,j,k)
+                mixo(1)%jprod_don_100(i,j) = mixo(1)%jprod_don_100(i,j) + (mixo(1)%jprod_ldon(i,j,k) + &
+                   mixo(1)%jprod_sldon(i,j,k) + mixo(1)%jprod_srdon(i,j,k))*rho_dzt(i,j,k)
 
              do n = 1, NUM_ZOO !{
                 zoo(n)%jprod_n_100(i,j) = zoo(n)%jprod_n_100(i,j) + zoo(n)%jprod_n(i,j,k)* &
@@ -10130,6 +10177,33 @@ write (stdlogunit, generic_COBALT_nml)
            phyto(LARGE)%juptake_sio4_100(i,j) = phyto(LARGE)%juptake_sio4_100(i,j) + &
                phyto(LARGE)%juptake_sio4(i,j,k_100)*drho_dzt
 
+          ! Mixotrophs
+              mixo(1)%jprod_n_auto_100(i,j) = mixo(1)%jprod_n_auto_100(i,j) + mixo(1)%jprod_n_auto(i,j,k_100)* &
+                 drho_dzt
+              mixo(1)%jprod_n_new_100(i,j) = mixo(1)%jprod_n_new_100(i,j) + mixo(1)%juptake_no3(i,j,k_100)* &
+                 drho_dzt
+              mixo(1)%jzloss_n_100(i,j) = mixo(1)%jzloss_n_100(i,j) + mixo(1)%jzloss_n(i,j,k_100)* &
+                 drho_dzt
+             mixo(1)%jexuloss_n_100(i,j) = mixo(1)%jexuloss_n_100(i,j) + mixo(1)%jexuloss_n(i,j,k_100)* &
+                 drho_dzt
+              mixo(1)%f_n_100(i,j) = mixo(1)%f_n_100(i,j) + mixo(1)%f_n(i,j,k_100)*drho_dzt
+! added juptake_fe_100 
+              mixo(1)%juptake_fe_100(i,j) = mixo(1)%juptake_fe_100(i,j) + mixo(1)%juptake_fe(i,j,k_100)*drho_dzt
+! CAS: added juptake_po4_100
+              mixo(1)%juptake_po4_100(i,j) = mixo(1)%juptake_po4_100(i,j) + mixo(1)%juptake_po4(i,j,k_100)*drho_dzt
+           mixo(1)%jvirloss_n_100(i,j) = mixo(1)%jvirloss_n_100(i,j) + &
+               mixo(1)%jvirloss_n(i,j,k_100)*drho_dzt
+           mixo(1)%jaggloss_n_100(i,j) = mixo(1)%jaggloss_n_100(i,j) + &
+               mixo(1)%jaggloss_n(i,j,k_100)*drho_dzt
+               mixo(1)%jprod_n_hetero_100(i,j) = mixo(1)%jprod_n_hetero_100(i,j) + mixo(1)%jprod_n_hetero(i,j,k_100)* &
+                 drho_dzt
+               mixo(1)%jingest_n_100(i,j) = mixo(1)%jingest_n_100(i,j) + mixo(1)%jingest_n(i,j,k_100)* &
+                 drho_dzt
+               mixo(1)%jremin_n_100(i,j) = mixo(1)%jremin_n_100(i,j) + mixo(1)%jprod_nh4(i,j,k_100)* &
+                 drho_dzt
+               mixo(1)%jprod_don_100(i,j) = mixo(1)%jprod_don_100(i,j) + (mixo(1)%jprod_ldon(i,j,k_100) + &
+                 mixo(1)%jprod_sldon(i,j,k_100) + mixo(1)%jprod_srdon(i,j,k_100))*drho_dzt
+
            do n = 1, NUM_ZOO !{
                zoo(n)%jprod_n_100(i,j) = zoo(n)%jprod_n_100(i,j) + zoo(n)%jprod_n(i,j,k_100)* &
                  drho_dzt
@@ -10199,7 +10273,7 @@ write (stdlogunit, generic_COBALT_nml)
        endif
 
        cobalt%jprod_allphytos_100(i,j) = phyto(SMALL)%jprod_n_100(i,j) + phyto(LARGE)%jprod_n_100(i,j) + &
-          phyto(DIAZO)%jprod_n_100(i,j) 
+          phyto(DIAZO)%jprod_n_100(i,j) + mixo(1)%jprod_n_auto_100(i,j)
     enddo ; enddo  !} i,j
 
     !
@@ -13707,7 +13781,8 @@ write (stdlogunit, generic_COBALT_nml)
        allocate(zoo(n)%jprod_ndet_100(isd:ied,jsd:jed))   ; zoo(n)%jprod_ndet_100    = 0.0
    enddo
 
-   allocate(mixo(1)%jprod_n_100(isd:ied,jsd:jed))      ; mixo(1)%jprod_n_100      = 0.0
+   allocate(mixo(1)%jprod_n_auto_100(isd:ied,jsd:jed)) ; mixo(1)%jprod_n_auto_100      = 0.0
+   allocate(mixo(1)%jprod_n_hetero_100(isd:ied,jsd:jed)) ; mixo(1)%jprod_n_hetero_100      = 0.0
    allocate(mixo(1)%jprod_n_new_100(isd:ied,jsd:jed))  ; mixo(1)%jprod_n_new_100  = 0.0
    allocate(mixo(1)%jzloss_n_100(isd:ied,jsd:jed))     ; mixo(1)%jzloss_n_100  = 0.0
    allocate(mixo(1)%jexuloss_n_100(isd:ied,jsd:jed))   ; mixo(1)%jexuloss_n_100  = 0.0
@@ -13954,7 +14029,8 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(mixo(1)%jprod_nh4)
     deallocate(mixo(1)%o2lim)
     deallocate(mixo(1)%temp_lim)
-    deallocate(mixo(1)%jprod_n_100)
+    deallocate(mixo(1)%jprod_n_auto_100)
+    deallocate(mixo(1)%jprod_n_hetero_100)
     deallocate(mixo(1)%jprod_n_new_100)
     deallocate(mixo(1)%jzloss_n_100)
     deallocate(mixo(1)%jexuloss_n_100)
