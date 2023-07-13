@@ -621,7 +621,8 @@ module generic_COBALT
           id_juptake_no3  = -1, & 
           id_juptake_po4  = -1, &
           id_juptake_sio4 = -1, &
-          id_jprod_n      = -1, & 
+          id_jprod_n_auto      = -1, & 
+          id_jprod_n_hetero      = -1, & 
           id_liebig_lim   = -1, &
           id_mu           = -1, &
           id_f_mu_mem     = -1, &
@@ -633,9 +634,10 @@ module generic_COBALT
           id_q_fe_2_n     = -1, &
           id_q_p_2_n      = -1, &
           id_silim        = -1, &
-          id_q_si_2_n     = -1, & 
+          id_q_si_2_n     = -1, &
           id_theta        = -1, &
-          id_jprod_n_100  = -1, &
+          id_jprod_n_auto_100  = -1, &
+          id_jprod_n_hetero_100  = -1, &
           id_jprod_n_new_100  = -1, &     
           id_jprod_n_n2_100 = -1, &
           id_jzloss_n_100     = -1, &
@@ -2456,13 +2458,17 @@ write (stdlogunit, generic_COBALT_nml)
     mixo(1)%id_juptake_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_nmx","Mixotroph Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
-    mixo(1)%id_jprod_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+    vardesc_temp = vardesc("jprod_nmx","Mixotroph Primary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_auto = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     !
-    ! Register mixotroph production terms 
+    ! Register secondary mixotroph production terms 
     !
+    vardesc_temp = vardesc("jprod_nlgz","Secondary Production of new biomass (nitrogen) by mixotrophs, layer integral",&
+                           'h','L','s','mol N m-2 s-1','f')
+    mixo(1)%id_jprod_n_hetero = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("o2lim_Mx","Oxygen limitation of mixotrophs",'h','L','s','dimensionless','f')
     mixo(1)%id_o2lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
@@ -3875,8 +3881,8 @@ write (stdlogunit, generic_COBALT_nml)
     zoo(3)%id_jremin_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-     vardesc_temp = vardesc("jprod_nmx_100","Mixotroph nitrogen  prim. prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
-    mixo(1)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+     vardesc_temp = vardesc("jprod_nmx_100","Mixotroph nitrogen prim. prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_auto_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("jprod_nmx_new_100","Mixotroph new (NO3-based) prim. prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
@@ -3899,8 +3905,8 @@ write (stdlogunit, generic_COBALT_nml)
     mixo(1)%id_jexuloss_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_nmx_100","Mixotroph nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
-    mixo(1)%id_jprod_n_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
+    vardesc_temp = vardesc("jprod_nmx_100","Mixotroph secondary nitrogen prod. integral in upper 100m",'h','1','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_hetero_100 = register_diag_field(package_name, vardesc_temp%name, axes(1:2),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     vardesc_temp = vardesc("jingest_n_nmx_100","Mixotroph nitrogen ingestion integral in upper 100m",'h','1','s','mol m-2 s-1','f')
@@ -10347,6 +10353,16 @@ write (stdlogunit, generic_COBALT_nml)
              phyto(n)%irrlim_bw_100(i,j) = phyto(n)%irrlim_bw_100(i,j) + phyto(n)%irrlim(i,j,k_100)* &
                 phyto(n)%f_n(i,j,k_100)*drho_dzt/phyto(n)%f_n_100(i,j)
           enddo
+
+          mixo(1)%nlim_bw_100(i,j) = mixo(1)%nlim_bw_100(i,j) + &
+               (mixo(1)%no3lim(i,j,k_100)+mixo(1)%nh4lim(i,j,k_100))* &
+               mixo(1)%f_n(i,j,k_100)*drho_dzt/mixo(1)%f_n_100(i,j)
+          mixo(1)%plim_bw_100(i,j) = mixo(1)%plim_bw_100(i,j) + mixo(1)%po4lim(i,j,k_100)* &
+               mixo(1)%f_n(i,j,k_100)*drho_dzt/mixo(1)%f_n_100(i,j)
+          mixo(1)%def_fe_bw_100(i,j) = mixo(1)%def_fe_bw_100(i,j) + mixo(1)%def_fe(i,j,k_100)* &
+               mixo(1)%f_n(i,j,k_100)*drho_dzt/mixo(1)%f_n_100(i,j)
+          mixo(1)%irrlim_bw_100(i,j) = mixo(1)%irrlim_bw_100(i,j) + mixo(1)%irrlim(i,j,k_100)* &
+               mixo(1)%f_n(i,j,k_100)*drho_dzt/mixo(1)%f_n_100(i,j)
         endif
     enddo; enddo  !} i, j
     deallocate(rho_dzt_100)
@@ -10561,6 +10577,186 @@ write (stdlogunit, generic_COBALT_nml)
             model_time, rmask = grid_tmask,&
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
     enddo
+
+    !--------------------------------------------------------------------------------------
+    ! Send mixotrophy diagnostic data
+    !
+    if (mixo(1)%id_def_fe .gt. 0)          &
+            used = g_send_data(mixo(1)%id_def_fe,     mixo(1)%def_fe,           &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_felim .gt. 0)           &
+            used = g_send_data(mixo(1)%id_felim,      mixo(1)%felim,            &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_irrlim .gt. 0)          &
+            used = g_send_data(mixo(1)%id_irrlim,     mixo(1)%irrlim,           &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jzloss_n .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jzloss_n, mixo(1)%jzloss_n*rho_dzt,      &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jaggloss_n .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jaggloss_n, mixo(1)%jaggloss_n*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jvirloss_n .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jvirloss_n, mixo(1)%jvirloss_n*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jexuloss_n .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jexuloss_n, mixo(1)%jexuloss_n*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_juptake_fe .gt. 0)          &
+            used = g_send_data(mixo(1)%id_juptake_fe, mixo(1)%juptake_fe*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_juptake_nh4 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_juptake_nh4, mixo(1)%juptake_nh4*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_juptake_no3 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_juptake_no3, mixo(1)%juptake_no3*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_juptake_po4 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_juptake_po4, mixo(1)%juptake_po4*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_n_auto .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_n_auto, mixo(1)%jprod_n_auto*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_liebig_lim .gt. 0)      &
+            used = g_send_data(mixo(1)%id_liebig_lim,mixo(1)%liebig_lim,          &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_mu .gt. 0)              &
+            used = g_send_data(mixo(1)%id_mu,        mixo(1)%mu,                  &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_nh4lim .gt. 0)          &
+            used = g_send_data(mixo(1)%id_nh4lim,     mixo(1)%nh4lim,             &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_no3lim .gt. 0)          &
+            used = g_send_data(mixo(1)%id_no3lim,     mixo(1)%no3lim,             &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_po4lim .gt. 0)          &
+            used = g_send_data(mixo(1)%id_po4lim,     mixo(1)%po4lim,             &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_o2lim .gt. 0)          &
+            used = g_send_data(mixo(1)%id_o2lim,     mixo(1)%o2lim,             &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_q_fe_2_n .gt. 0)        &
+            used = g_send_data(mixo(1)%id_q_fe_2_n,   mixo(1)%q_fe_2_n,           &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_theta .gt. 0)           &
+            used = g_send_data(mixo(1)%id_theta,      mixo(1)%theta,              &
+            model_time, rmask = grid_tmask,& 
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_f_mu_mem .gt. 0)           &
+            used = g_send_data(mixo(1)%id_f_mu_mem,      mixo(1)%f_mu_mem,              &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_mu_mix .gt. 0)           &
+            used = g_send_data(mixo(1)%id_mu_mix,      mixo(1)%mu_mix,              &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_agg_lim .gt. 0)           &
+            used = g_send_data(mixo(1)%id_agg_lim,      mixo(1)%agg_lim,              &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jhploss_n .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jhploss_n, mixo(1)%jhploss_n*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jingest_n .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jingest_n, mixo(1)%jingest_n*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jingest_p .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jingest_p, mixo(1)%jingest_p*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jingest_sio2 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jingest_sio2, mixo(1)%jingest_sio2*rho_dzt,      &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jingest_fe .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jingest_fe, mixo(1)%jingest_fe*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_ndet .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_ndet, mixo(1)%jprod_ndet*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_pdet .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_pdet, mixo(1)%jprod_pdet*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_ldon .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_ldon, mixo(1)%jprod_ldon*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_ldop .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_ldop, mixo(1)%jprod_ldop*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_sldon .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_sldon, mixo(1)%jprod_sldon*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_sldop .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_sldop, mixo(1)%jprod_sldop*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+      if (mixo(1)%id_jprod_srdon .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_srdon, mixo(1)%jprod_srdon*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_srdop .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_srdop, mixo(1)%jprod_srdop*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_fed .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_fed,  mixo(1)%jprod_fed*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_fedet .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_fedet, mixo(1)%jprod_fedet*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_sidet .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_sidet, mixo(1)%jprod_sidet*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_sio4 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_sio4, mixo(1)%jprod_sio4*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_po4 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_po4,  mixo(1)%jprod_po4*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_nh4 .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_nh4,  mixo(1)%jprod_nh4*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_n_hetero .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_n_hetero,   mixo(1)%jprod_n_hetero*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_temp_lim .gt. 0)          &
+            used = g_send_data(mixo(1)%id_temp_lim, mixo(1)%temp_lim,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
     !--------------------------------------------------------------------------------------
     ! Send bacterial diagnostic data
     !
@@ -11282,6 +11478,53 @@ write (stdlogunit, generic_COBALT_nml)
           is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
     enddo
 
+    ! Mixotrophs
+    if (mixo(1)%id_sfc_f_n .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_f_n, mixo(1)%f_n(:,:,1),            & 
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+       if (mixo(1)%id_sfc_chl .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_chl,    cobalt%c_2_n * 12.0e6 *      &
+          mixo(1)%theta(:,:,1) * mixo(1)%f_n(:,:,1),                          &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+       if (mixo(1)%id_sfc_def_fe .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_def_fe, mixo(1)%def_fe(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+       if (mixo(1)%id_sfc_felim .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_felim, mixo(1)%felim(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+      if (mixo(1)%id_sfc_irrlim .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_irrlim, mixo(1)%irrlim(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+     if (mixo(1)%id_sfc_theta .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_theta, mixo(1)%theta(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+     if (mixo(1)%id_sfc_mu .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_mu, mixo(1)%mu(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+    if (mixo(1)%id_sfc_po4lim .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_po4lim, mixo(1)%po4lim(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+    if (mixo(1)%id_sfc_q_fe_2_n .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_q_fe_2_n, mixo(1)%q_fe_2_n(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+    if (mixo(1)%id_sfc_nh4lim .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_nh4lim, mixo(1)%nh4lim(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+     if (mixo(1)%id_sfc_no3lim .gt. 0)              &
+          used = g_send_data(mixo(1)%id_sfc_no3lim, mixo(1)%no3lim(:,:,1),      &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
     ! 
     ! Save river, depositon and bulk elemental fluxes
     !
@@ -11430,6 +11673,52 @@ write (stdlogunit, generic_COBALT_nml)
        used = g_send_data(phyto(LARGE)%id_jaggloss_n_100, phyto(LARGE)%jaggloss_n_100,         &
        model_time, rmask = grid_tmask(:,:,1),&
        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+       ! Mixotrophs
+          if (mixo(1)%id_jprod_n_auto_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jprod_n_auto_100, mixo(1)%jprod_n_auto_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+         if (mixo(1)%id_jprod_n_new_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jprod_n_new_100, mixo(1)%jprod_n_new_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+         if (mixo(1)%id_jzloss_n_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jzloss_n_100, mixo(1)%jzloss_n_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+         if (mixo(1)%id_jexuloss_n_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jexuloss_n_100, mixo(1)%jexuloss_n_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+         if (mixo(1)%id_f_n_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_f_n_100, mixo(1)%f_n_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+       if (mixo(1)%id_jvirloss_n_100 .gt. 0)     &
+          used = g_send_data(mixo(1)%id_jvirloss_n_100, mixo(1)%jvirloss_n_100,         &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+      if (mixo(1)%id_jaggloss_n_100 .gt. 0)     &
+          used = g_send_data(mixo(1)%id_jaggloss_n_100, mixo(1)%jaggloss_n_100,         &
+          model_time, rmask = grid_tmask(:,:,1),&
+          is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+          if (mixo(1)%id_jprod_n_hetero_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jprod_n_hetero_100, mixo(1)%jprod_n_hetero_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+          if (mixo(1)%id_jingest_n_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jingest_n_100, mixo(1)%jingest_n_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+          if (mixo(1)%id_jremin_n_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jremin_n_100, mixo(1)%jremin_n_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+          if (mixo(1)%id_jprod_don_100 .gt. 0)     &
+             used = g_send_data(mixo(1)%id_jprod_don_100, mixo(1)%jprod_don_100,         &
+             model_time, rmask = grid_tmask(:,:,1),&
+             is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
      do n= 1, NUM_ZOO  !{
        if (zoo(n)%id_jprod_n_100 .gt. 0)     &
