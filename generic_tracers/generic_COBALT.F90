@@ -549,6 +549,9 @@ module generic_COBALT
           jexuloss_fe , &
           jexuloss_n  , &
           jexuloss_p  , &
+          jhploss_fe  , & 
+          jhploss_n   , &
+          jhploss_p   , & 
           juptake_fe  , & 
           juptake_nh4 , & 
           juptake_no3 , & 
@@ -9021,7 +9024,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_get_pointer(tracer_list,'fed'    ,'field',cobalt%p_fed    )
     call g_tracer_get_pointer(tracer_list,'fedi'   ,'field',cobalt%p_fedi   )
     call g_tracer_get_pointer(tracer_list,'felg'   ,'field',cobalt%p_felg   )
-    call g_tracer_get_pointer(tracer_list,'fesm'   ,'field',cobalt%p_fesm )
+    call g_tracer_get_pointer(tracer_list,'fesm'   ,'field',cobalt%p_fesm   )
+    call g_tracer_get_pointer(tracer_list,'femx'   ,'field',cobalt%p_femx   )
     call g_tracer_get_pointer(tracer_list,'fedet'  ,'field',cobalt%p_fedet  )
     call g_tracer_get_pointer(tracer_list,'ldon'   ,'field',cobalt%p_ldon   )
     call g_tracer_get_pointer(tracer_list,'ldop'   ,'field',cobalt%p_ldop   )
@@ -9031,7 +9035,8 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_get_pointer(tracer_list,'ndet'   ,'field',cobalt%p_ndet   )
     call g_tracer_get_pointer(tracer_list,'ndi'    ,'field',cobalt%p_ndi    )
     call g_tracer_get_pointer(tracer_list,'nlg'    ,'field',cobalt%p_nlg    )
-    call g_tracer_get_pointer(tracer_list,'nsm' ,'field',cobalt%p_nsm )
+    call g_tracer_get_pointer(tracer_list,'nsm'    ,'field',cobalt%p_nsm    )
+    call g_tracer_get_pointer(tracer_list,'nmx'    ,'field',cobalt%p_nmx    )
     call g_tracer_get_pointer(tracer_list,'nh4'    ,'field',cobalt%p_nh4    )
     call g_tracer_get_pointer(tracer_list,'no3'    ,'field',cobalt%p_no3    )
     call g_tracer_get_pointer(tracer_list,'o2'     ,'field',cobalt%p_o2     )
@@ -9066,7 +9071,7 @@ write (stdlogunit, generic_COBALT_nml)
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec  !{
          pre_totn(i,j,k) = (cobalt%p_no3(i,j,k,tau) + cobalt%p_nh4(i,j,k,tau) + & 
                     cobalt%p_ndi(i,j,k,tau) + cobalt%p_nlg(i,j,k,tau) + &
-                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
+                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nmx(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
@@ -9076,7 +9081,7 @@ write (stdlogunit, generic_COBALT_nml)
          pre_totc(i,j,k) = (cobalt%p_dic(i,j,k,tau) + &
                     cobalt%p_cadet_arag(i,j,k,tau) + cobalt%p_cadet_calc(i,j,k,tau) + &
                     cobalt%c_2_n*(cobalt%p_ndi(i,j,k,tau) + cobalt%p_nlg(i,j,k,tau) + &
-                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
+                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nmx(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
@@ -9084,6 +9089,7 @@ write (stdlogunit, generic_COBALT_nml)
          pre_totp(i,j,k) = (cobalt%p_po4(i,j,k,tau) + cobalt%p_ndi(i,j,k,tau)*phyto(1)%p_2_n_static + &
                     cobalt%p_nlg(i,j,k,tau)*phyto(2)%p_2_n_static + &
                     cobalt%p_nsm(i,j,k,tau)*phyto(3)%p_2_n_static + &
+                    cobalt%p_nmx(i,j,k,tau)*mixo(1)%p_2_n_static + &
                     cobalt%p_ldop(i,j,k,tau) + cobalt%p_sldop(i,j,k,tau) + &
                     cobalt%p_srdop(i,j,k,tau) +  cobalt%p_pdet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau)*zoo(1)%q_p_2_n + &
@@ -9091,7 +9097,7 @@ write (stdlogunit, generic_COBALT_nml)
                     cobalt%p_nlgz(i,j,k,tau)*zoo(3)%q_p_2_n + &
                     bact(1)%q_p_2_n*cobalt%p_nbact(i,j,k,tau))*grid_tmask(i,j,k)
          pre_totfe(i,j,k) = (cobalt%p_fed(i,j,k,tau) + cobalt%p_fedi(i,j,k,tau) + &
-                    cobalt%p_felg(i,j,k,tau) + cobalt%p_fesm(i,j,k,tau) + & 
+                    cobalt%p_felg(i,j,k,tau) + cobalt%p_fesm(i,j,k,tau) + cobalt%p_femx(i,j,k,tau) + & 
                     cobalt%p_fedet(i,j,k,tau))*grid_tmask(i,j,k)
          net_srcfe(i,j,k) = cobalt%jfe_coast(i,j,k)*dt*grid_tmask(i,j,k)
          pre_totsi(i,j,k) = (cobalt%p_sio4(i,j,k,tau) + cobalt%p_silg(i,j,k,tau) + &
@@ -9140,6 +9146,14 @@ write (stdlogunit, generic_COBALT_nml)
                             phyto(SMALL)%jaggloss_n(i,j,k) - phyto(SMALL)%jvirloss_n(i,j,k) -      &
                             phyto(SMALL)%jexuloss_n(i,j,k)                                         
        cobalt%p_nsm(i,j,k,tau) = cobalt%p_nsm(i,j,k,tau) + cobalt%jnsm(i,j,k)*dt*grid_tmask(i,j,k)
+       !
+       ! Mixotroph Nitrogen
+       !
+       cobalt%jnmx(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k) -    &
+                            mixo(1)%jzloss_n(i,j,k) - mixo(1)%jhploss_n(i,j,k) -         &
+                            mixo(1)%jaggloss_n(i,j,k) - mixo(1)%jvirloss_n(i,j,k) -      &
+                            mixo(1)%jexuloss_n(i,j,k)                                         
+       cobalt%p_nmx(i,j,k,tau) = cobalt%p_nmx(i,j,k,tau) + cobalt%jnmx(i,j,k)*dt*grid_tmask(i,j,k)
     enddo; enddo ; enddo  !} i,j,k
 !
     call mpp_clock_end(id_clock_source_sink_loop2)
@@ -9178,6 +9192,14 @@ write (stdlogunit, generic_COBALT_nml)
                                 phyto(SMALL)%jzloss_fe(i,j,k) - &
                                 phyto(SMALL)%jhploss_fe(i,j,k) - phyto(SMALL)%jaggloss_fe(i,j,k) - &
                                 phyto(SMALL)%jvirloss_fe(i,j,k) - phyto(SMALL)%jexuloss_fe(i,j,k)
+       cobalt%p_fesm(i,j,k,tau) = cobalt%p_fesm(i,j,k,tau) + cobalt%jfesm(i,j,k)*dt*grid_tmask(i,j,k)
+       !
+       ! Mixotroph Iron
+       !
+       cobalt%jfesm(i,j,k) = mixo(1)%juptake_fe(i,j,k) - &
+                                mixo(1)%jzloss_fe(i,j,k) - &
+                                mixo(1)%jhploss_fe(i,j,k) - mixo(1)%jaggloss_fe(i,j,k) - &
+                                mixo(1)%jvirloss_fe(i,j,k) - mixo(1)%jexuloss_fe(i,j,k)
        cobalt%p_fesm(i,j,k,tau) = cobalt%p_fesm(i,j,k,tau) + cobalt%jfesm(i,j,k)*dt*grid_tmask(i,j,k)
        !
        ! Bacteria
