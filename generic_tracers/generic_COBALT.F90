@@ -12469,7 +12469,7 @@ write (stdlogunit, generic_COBALT_nml)
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
     if (cobalt%id_ppmixo .gt. 0)            &
-        used = g_send_data(cobalt%id_ppmixo,  mixo(1)%jprod_n * rho_dzt * cobalt%c_2_n / dzt,  &
+        used = g_send_data(cobalt%id_ppmixo,  mixo(1)%jprod_n_auto * rho_dzt * cobalt%c_2_n / dzt,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -12941,7 +12941,7 @@ write (stdlogunit, generic_COBALT_nml)
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
     if (cobalt%id_intppmixo .gt. 0)            &
-        used = g_send_data(cobalt%id_intppmixo,  mixo(1)%jprod_n_100 * cobalt%c_2_n,  &
+        used = g_send_data(cobalt%id_intppmixo,  mixo(1)%jprod_n_auto_100 * cobalt%c_2_n,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
