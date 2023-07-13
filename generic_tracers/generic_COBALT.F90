@@ -9678,18 +9678,18 @@ write (stdlogunit, generic_COBALT_nml)
     !
     cobalt%tot_layer_int_c(:,:,:) = (cobalt%p_dic(:,:,:,tau) + cobalt%doc_background + cobalt%p_cadet_arag(:,:,:,tau) +&
          cobalt%p_cadet_calc(:,:,:,tau) + cobalt%c_2_n * (cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) +      &
-         cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) + &
+         cobalt%p_nsm(:,:,:,tau) + cobalt%p_nmx(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) + &
          cobalt%p_ldon(:,:,:,tau) + cobalt%p_sldon(:,:,:,tau) + cobalt%p_srdon(:,:,:,tau) +  &
          cobalt%p_ndet(:,:,:,tau) + cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + &
          cobalt%p_nlgz(:,:,:,tau))) * rho_dzt(:,:,:)
 
     cobalt%tot_layer_int_fe(:,:,:) = (cobalt%p_fed(:,:,:,tau) + cobalt%p_fedi(:,:,:,tau) + &
-         cobalt%p_felg(:,:,:,tau) + cobalt%p_fesm(:,:,:,tau) + & 
+         cobalt%p_felg(:,:,:,tau) + cobalt%p_fesm(:,:,:,tau) + cobalt%p_femx(:,:,:,tau) + & 
          cobalt%p_fedet(:,:,:,tau)) * rho_dzt(:,:,:) 
 
     cobalt%tot_layer_int_n(:,:,:) = (cobalt%p_no3(:,:,:,tau) + &
          cobalt%p_nh4(:,:,:,tau) + cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + &
-         cobalt%p_nsm(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) + &
+         cobalt%p_nsm(:,:,:,tau) + cobalt%p_nmx(:,:,:,tau) + cobalt%p_nbact(:,:,:,tau) + &
          cobalt%p_ldon(:,:,:,tau) + cobalt%p_sldon(:,:,:,tau) + cobalt%p_srdon(:,:,:,tau) +  cobalt%p_ndet(:,:,:,tau) + &
          cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + cobalt%p_nlgz(:,:,:,tau)) * & 
          rho_dzt(:,:,:)
@@ -9698,6 +9698,7 @@ write (stdlogunit, generic_COBALT_nml)
          cobalt%p_ndi(:,:,:,tau)*phyto(1)%p_2_n_static + &
          cobalt%p_nlg(:,:,:,tau)*phyto(2)%p_2_n_static + &
          cobalt%p_nsm(:,:,:,tau)*phyto(3)%p_2_n_static + &
+         cobalt%p_nmx(:,:,:,tau)*mixo(1)%p_2_n_static + &
          cobalt%p_ldop(:,:,:,tau) + cobalt%p_sldop(:,:,:,tau) + &
          cobalt%p_srdop(:,:,:,tau) + cobalt%p_pdet(:,:,:,tau) + &
          bact(1)%q_p_2_n*cobalt%p_nbact(:,:,:,tau) + zoo(1)%q_p_2_n*cobalt%p_nsmz(:,:,:,tau) +  &
@@ -9720,7 +9721,7 @@ write (stdlogunit, generic_COBALT_nml)
     cobalt%tot_layer_int_doc(:,:,:) = cobalt%doc_background +  cobalt%c_2_n * (cobalt%p_ldon(:,:,:,tau) + cobalt%p_sldon(:,:,:,tau) +  &
          cobalt%p_srdon(:,:,:,tau)) * rho_dzt(:,:,:)
 
-   cobalt%tot_layer_int_poc(:,:,:) = (cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + cobalt%p_nsm(:,:,:,tau) + &
+   cobalt%tot_layer_int_poc(:,:,:) = (cobalt%p_ndi(:,:,:,tau) + cobalt%p_nlg(:,:,:,tau) + cobalt%p_nsm(:,:,:,tau) + cobalt%p_nmx(:,:,:,tau) + &
          cobalt%p_nbact(:,:,:,tau) + cobalt%p_ndet(:,:,:,tau) + cobalt%p_nsmz(:,:,:,tau) + cobalt%p_nmdz(:,:,:,tau) + &
          cobalt%p_nlgz(:,:,:,tau))*cobalt%c_2_n*rho_dzt(:,:,:)
 
@@ -9776,7 +9777,7 @@ write (stdlogunit, generic_COBALT_nml)
           cobalt%wc_vert_int_jnitrif(i,j) = cobalt%wc_vert_int_jnitrif(i,j) +                         &
              cobalt%jnitrif(i,j,k) * rho_dzt(i,j,k) * grid_tmask(i,j,k)
           cobalt%wc_vert_int_juptake_nh4(i,j) = cobalt%wc_vert_int_juptake_nh4(i,j) +                     &
-             (phyto(1)%juptake_nh4(i,j,k)+phyto(2)%juptake_nh4(i,j,k)+phyto(3)%juptake_nh4(i,j,k))* & 
+             (phyto(1)%juptake_nh4(i,j,k)+phyto(2)%juptake_nh4(i,j,k)+phyto(3)%juptake_nh4(i,j,k)+mixo(1)%juptake_nh4(i,j,k))* & 
              rho_dzt(i,j,k) * grid_tmask(i,j,k)
 
           cobalt%wc_vert_int_jprod_nh4(i,j) = cobalt%wc_vert_int_jprod_nh4(i,j) +                     &
