@@ -13825,9 +13825,6 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(mixo(1)%jexuloss_fe(isd:ied,jsd:jed,nk))  ; mixo(1)%jexuloss_fe    = 0.0
     allocate(mixo(1)%jexuloss_n(isd:ied,jsd:jed,nk))   ; mixo(1)%jexuloss_n     = 0.0
     allocate(mixo(1)%jexuloss_p(isd:ied,jsd:jed,nk))   ; mixo(1)%jexuloss_p     = 0.0
-    allocate(mixo(1)%jhploss_fe(isd:ied,jsd:jed,nk))   ; mixo(1)%jhploss_fe     = 0.0
-    allocate(mixo(1)%jhploss_n(isd:ied,jsd:jed,nk))    ; mixo(1)%jhploss_n      = 0.0
-    allocate(mixo(1)%jhploss_p(isd:ied,jsd:jed,nk))    ; mixo(1)%jhploss_p      = 0.0
     allocate(mixo(1)%juptake_fe(isd:ied,jsd:jed,nk))   ; mixo(1)%juptake_fe     = 0.0
     allocate(mixo(1)%juptake_nh4(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_nh4    = 0.0
     allocate(mixo(1)%juptake_no3(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_no3    = 0.0
@@ -13947,7 +13944,6 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(cobalt%jndi(isd:ied, jsd:jed, 1:nk))         ; cobalt%jndi=0.0
     allocate(cobalt%jnsm(isd:ied, jsd:jed, 1:nk))         ; cobalt%jnsm=0.0
     allocate(cobalt%jnlg(isd:ied, jsd:jed, 1:nk))         ; cobalt%jnlg=0.0
-    allocate(cobalt%jnmx(isd:ied, jsd:jed, 1:nk))         ; cobalt%jnmx=0.0
     allocate(cobalt%jnsmz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnsmz=0.0
     allocate(cobalt%jnmdz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnmdz=0.0
     allocate(cobalt%jnlgz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnlgz=0.0
@@ -14381,9 +14377,6 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(mixo(1)%jexuloss_n)
     deallocate(mixo(1)%jexuloss_p)
     deallocate(mixo(1)%jexuloss_fe)
-    deallocate(mixo(1)%jhploss_fe)
-    deallocate(mixo(1)%jhploss_n)
-    deallocate(mixo(1)%jhploss_p)
     deallocate(mixo(1)%juptake_fe)
     deallocate(mixo(1)%juptake_nh4)
     deallocate(mixo(1)%juptake_no3)
@@ -14509,8 +14502,7 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(cobalt%f_sidet_btf)  
     deallocate(cobalt%jnbact)  
     deallocate(cobalt%jndi)  
-    deallocate(cobalt%jnsm)    
-    deallocate(cobalt%jnmx)
+    deallocate(cobalt%jnsm)  
     deallocate(cobalt%jnlg)  
     deallocate(cobalt%jnsmz)  
     deallocate(cobalt%jnmdz)  
