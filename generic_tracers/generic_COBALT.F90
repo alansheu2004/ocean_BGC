@@ -8149,9 +8149,9 @@ write (stdlogunit, generic_COBALT_nml)
                         ( (ipa_matrix(m,5)*prey_vec(5))**mixo(1)%nswitch / &
                           (sw_fac_denom+epsln) )**(1.0/mixo(1)%mswitch)
        tot_prey(m) = pa_matrix(m,3)*prey_vec(3) + pa_matrix(m,5)*prey_vec(5)
-       ingest_matrix(m,3) = mixo(1)%temp_lim(i,j,k)*mixo(1)%o2lim(i,j,k)*mixo(1)%imax* &
+       ingest_matrix(m,3) = mixo(1)%eta * (1-mixo(1)%epsilon) * mixo(1)%temp_lim(i,j,k)*mixo(1)%o2lim(i,j,k)*mixo(1)%imax* &
                      pa_matrix(m,3)*prey_vec(3)*mixo(1)%f_n(i,j,k)/(mixo(1)%ki+tot_prey(m))
-       ingest_matrix(m,5) = mixo(1)%temp_lim(i,j,k)*mixo(1)%o2lim(i,j,k)*mixo(1)%imax* &
+       ingest_matrix(m,5) = mixo(1)%eta * (1-mixo(1)%epsilon) * mixo(1)%temp_lim(i,j,k)*mixo(1)%o2lim(i,j,k)*mixo(1)%imax* &
                      pa_matrix(m,5)*prey_vec(5)*mixo(1)%f_n(i,j,k)/(mixo(1)%ki+tot_prey(m))
        mixo(1)%jingest_n(i,j,k) = ingest_matrix(m,3) + ingest_matrix(m,5)
        mixo(1)%jingest_p(i,j,k) = ingest_matrix(m,3)*prey_p2n_vec(3) + &
