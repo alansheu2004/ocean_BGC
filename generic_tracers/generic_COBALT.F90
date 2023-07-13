@@ -8265,7 +8265,7 @@ write (stdlogunit, generic_COBALT_nml)
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec; !{
 
        !  
-       ! 3.2.1 Calculate losses of phytoplankton to aggregation 
+       ! 3.2.1 Calculate losses of phytoplankton & mixotrophs to aggregation 
        !
 
        do n = 1,NUM_PHYTO !{
@@ -8278,8 +8278,16 @@ write (stdlogunit, generic_COBALT_nml)
             phyto(n)%jaggloss_sio2(i,j,k) = phyto(n)%jaggloss_n(i,j,k)*phyto(n)%q_si_2_n(i,j,k)
        enddo !} n
 
+       growth_ratio = min(mixo(1)%f_mu_mem(i,j,k)/ &
+                    (mixo(1)%frac_mu_agg*mixo(1)%P_C_max*cobalt%expkT(i,j,k)),1.0)
+       mixo(1)%agg_lim(i,j,k) = (1.0-growth_ratio)**2
+       mixo(1)%jaggloss_n(i,j,k) = mixo(1)%agg_lim(i,j,k)*mixo(1)%agg*mixo(1)%f_n(i,j,k)**2.0 
+       mixo(1)%jaggloss_p(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
+       mixo(1)%jaggloss_fe(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_fe_2_n(i,j,k)
+       mixo(1)%jaggloss_sio2(i,j,k) = mixo(1)%jaggloss_n(i,j,k)*mixo(1)%q_si_2_n(i,j,k)
+
        !
-       ! 3.2.2 Calculate phytoplankton and bacterial losses to viruses
+       ! 3.2.2 Calculate phytoplankton, mixotroph, and bacterial losses to viruses
        !
 
        do n = 1,NUM_PHYTO !{
@@ -8288,6 +8296,11 @@ write (stdlogunit, generic_COBALT_nml)
           phyto(n)%jvirloss_fe(i,j,k) = phyto(n)%jvirloss_n(i,j,k)*phyto(n)%q_fe_2_n(i,j,k)
           phyto(n)%jvirloss_sio2(i,j,k) = phyto(n)%jvirloss_n(i,j,k)*phyto(n)%q_si_2_n(i,j,k)
        enddo !} n
+
+       mixo(1)%jvirloss_n(i,j,k) = bact(1)%temp_lim(i,j,k)*mixo(1)%vir*mixo(1)%f_n(i,j,k)**2.0 
+       mixo(1)%jvirloss_p(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_p_2_n(i,j,k)
+       mixo(1)%jvirloss_fe(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_fe_2_n(i,j,k)
+       mixo(1)%jvirloss_sio2(i,j,k) = mixo(1)%jvirloss_n(i,j,k)*mixo(1)%q_si_2_n(i,j,k)
 
        bact(1)%jvirloss_n(i,j,k) = bact(1)%temp_lim(i,j,k)*bact(1)%vir*bact(1)%f_n(i,j,k)**2.0
        bact(1)%jvirloss_p(i,j,k) = bact(1)%jvirloss_n(i,j,k)*bact(1)%q_p_2_n
@@ -8306,6 +8319,10 @@ write (stdlogunit, generic_COBALT_nml)
           phyto(n)%jexuloss_p(i,j,k) = phyto(n)%exu*max(phyto(n)%juptake_po4(i,j,k),0.0)
           phyto(n)%jexuloss_fe(i,j,k) = phyto(n)%exu*max(phyto(n)%juptake_fe(i,j,k),0.0)
        enddo
+
+       mixo(1)%jexuloss_n(i,j,k) = mixo(1)%exu*max(mixo(1)%juptake_no3(i,j,k)+mixo(1)%juptake_nh4(i,j,k),0.0)
+       mixo(1)%jexuloss_p(i,j,k) = mixo(1)%exu*max(mixo(1)%juptake_po4(i,j,k),0.0)
+       mixo(1)%jexuloss_fe(i,j,k) = mixo(1)%exu*max(mixo(1)%juptake_fe(i,j,k),0.0)
 
     enddo; enddo; enddo  !} i,j,k
     call mpp_clock_end(id_clock_other_losses)
