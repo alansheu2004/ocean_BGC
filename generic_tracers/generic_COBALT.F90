@@ -10293,6 +10293,15 @@ write (stdlogunit, generic_COBALT_nml)
           phyto(n)%irrlim_bw_100(i,j) = phyto(n)%irrlim(i,j,1)* &
                 phyto(n)%f_n(i,j,1)*rho_dzt(i,j,1)/(phyto(n)%f_n_100(i,j)+epsln)
        enddo   !} n
+
+       mixo(1)%nlim_bw_100(i,j) = (mixo(1)%no3lim(i,j,1)+mixo(1)%nh4lim(i,j,1))* &
+             mixo(1)%f_n(i,j,1)*rho_dzt(i,j,1)/(mixo(1)%f_n_100(i,j)+epsln)
+       mixo(1)%plim_bw_100(i,j) = mixo(1)%po4lim(i,j,1)* &
+             mixo(1)%f_n(i,j,1)*rho_dzt(i,j,1)/(mixo(1)%f_n_100(i,j)+epsln)
+       mixo(1)%def_fe_bw_100(i,j) = mixo(1)%def_fe(i,j,1)* &
+             mixo(1)%f_n(i,j,1)*rho_dzt(i,j,1)/(mixo(1)%f_n_100(i,j)+epsln)
+       mixo(1)%irrlim_bw_100(i,j) = mixo(1)%irrlim(i,j,1)* &
+             mixo(1)%f_n(i,j,1)*rho_dzt(i,j,1)/(mixo(1)%f_n_100(i,j)+epsln)
     enddo; enddo  !} i, j
 
     do j = jsc, jec ; do i = isc, iec ; !{
@@ -10312,6 +10321,16 @@ write (stdlogunit, generic_COBALT_nml)
                 phyto(n)%irrlim_bw_100(i,j) = phyto(n)%irrlim_bw_100(i,j) + phyto(n)%irrlim(i,j,k)* &
                    phyto(n)%f_n(i,j,k)*rho_dzt(i,j,k)/phyto(n)%f_n_100(i,j)
              enddo
+
+             mixo(1)%nlim_bw_100(i,j) = mixo(1)%nlim_bw_100(i,j) + & 
+                (mixo(1)%no3lim(i,j,k)+mixo(1)%nh4lim(i,j,k))* &
+                mixo(1)%f_n(i,j,k)*rho_dzt(i,j,k)/mixo(1)%f_n_100(i,j)
+             mixo(1)%plim_bw_100(i,j) = mixo(1)%plim_bw_100(i,j) + mixo(1)%po4lim(i,j,k)* &
+                mixo(1)%f_n(i,j,k)*rho_dzt(i,j,k)/mixo(1)%f_n_100(i,j)
+             mixo(1)%def_fe_bw_100(i,j) = mixo(1)%def_fe_bw_100(i,j) + mixo(1)%def_fe(i,j,k)* &
+                mixo(1)%f_n(i,j,k)*rho_dzt(i,j,k)/mixo(1)%f_n_100(i,j)
+             mixo(1)%irrlim_bw_100(i,j) = mixo(1)%irrlim_bw_100(i,j) + mixo(1)%irrlim(i,j,k)* &
+                mixo(1)%f_n(i,j,k)*rho_dzt(i,j,k)/mixo(1)%f_n_100(i,j)
           endif
        enddo  !} k
 
