@@ -1513,6 +1513,7 @@ module generic_COBALT
           id_dissi14cabio   = -1, & 
           id_dissoc         = -1, &
           id_phyc           = -1, &
+          id_mixoc          = -1, &
           id_zooc           = -1, &
           id_bacc           = -1, &
           id_detoc          = -1, &
@@ -1595,6 +1596,7 @@ module generic_COBALT
           id_dissi14cabioos     = -1, & 
           id_dissocos           = -1, &
           id_phycos             = -1, &
+          id_mixocos             = -1, &
           id_zoocos             = -1, &
           id_baccos             = -1, &
           id_detocos            = -1, &
@@ -4310,6 +4312,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="mole_concentration_of_phytoplankton_expressed_as_carbon_in_sea_water", &
          cmor_long_name="Phytoplankton Carbon Concentration")
 
+    vardesc_temp = vardesc("mixoc_raw","Mixotroph Carbon Concentration",'h','L','s','mol m-3','f')
+    cobalt%id_mixoc = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="mixoc", cmor_units="mol m-3",                          &
+         cmor_standard_name="mole_concentration_of_mixotroph_expressed_as_carbon_in_sea_water", &
+         cmor_long_name="Mixotroph Carbon Concentration")
+
     vardesc_temp = vardesc("zooc_raw","Zooplankton Carbon Concentration",'h','L','s','mol m-3','f')
     cobalt%id_zooc = register_diag_field(package_name, vardesc_temp%name, axes(1:3), &
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
@@ -5052,6 +5061,13 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_field_name="phycos", cmor_units="mol m-3",                          &
          cmor_standard_name="mole_concentration_of_phytoplankton_expressed_as_carbon_in_sea_water", &
          cmor_long_name="Surface Phytoplankton Carbon Concentration")
+
+     vardesc_temp = vardesc("mixocos_raw","Surface Mixotroph Carbon Concentration",'h','1','s','mol m-3','f')
+    cobalt%id_mixocos = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1, &
+         cmor_field_name="mixocos", cmor_units="mol m-3",                          &
+         cmor_standard_name="mole_concentration_of_mixotrophs_expressed_as_carbon_in_sea_water", &
+         cmor_long_name="Surface Mixotrophs Carbon Concentration")
 
     vardesc_temp = vardesc("zoocos_raw","Surface Zooplankton Carbon Concentration",'h','1','s','mol m-3','f')
     cobalt%id_zoocos = register_diag_field(package_name, vardesc_temp%name, axes(1:2), &
@@ -10279,7 +10295,7 @@ write (stdlogunit, generic_COBALT_nml)
        endif
 
        cobalt%jprod_allphytos_100(i,j) = phyto(SMALL)%jprod_n_100(i,j) + phyto(LARGE)%jprod_n_100(i,j) + &
-          phyto(DIAZO)%jprod_n_100(i,j) + mixo(1)%jprod_n_auto_100(i,j)
+          phyto(DIAZO)%jprod_n_100(i,j) ! + mixo(1)%jprod_n_auto_100(i,j)
     enddo ; enddo  !} i,j
 
     !
@@ -12071,6 +12087,11 @@ write (stdlogunit, generic_COBALT_nml)
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
+    if (cobalt%id_mixoc .gt. 0)            &
+        used = g_send_data(cobalt%id_mixoc,  (cobalt%p_nmx(:,:,:,tau)) * cobalt%c_2_n * cobalt%Rho_0, &
+        model_time, rmask = grid_tmask,&
+        is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+
     if (cobalt%id_zooc .gt. 0)            &
         used = g_send_data(cobalt%id_zooc,  (cobalt%p_nlgz(:,:,:,tau) + cobalt%p_nsmz(:,:,:,tau) +  &
         cobalt%p_nmdz(:,:,:,tau)) * cobalt%c_2_n * cobalt%Rho_0, &
@@ -12114,6 +12135,11 @@ write (stdlogunit, generic_COBALT_nml)
 
     if (cobalt%id_phymisc.gt. 0)  &
          used = g_send_data(cobalt%id_phymisc,  (cobalt%p_nlg(:,:,:,tau)-cobalt%nlg_diatoms) * cobalt%c_2_n * cobalt%Rho_0,  &
+         model_time, rmask = grid_tmask,&
+         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+
+    if (cobalt%id_mixo.gt. 0)  &
+         used = g_send_data(cobalt%id_mixo,  (cobalt%p_nmx(:,:,:,tau)) * cobalt%c_2_n * cobalt%Rho_0,  &
          model_time, rmask = grid_tmask,&
          is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -12213,6 +12239,12 @@ write (stdlogunit, generic_COBALT_nml)
 
     if (cobalt%id_chlmisc .gt. 0)            &
         used = g_send_data(cobalt%id_chlmisc,  phyto(LARGE)%theta * (cobalt%p_nlg(:,:,:,tau)-cobalt%nlg_diatoms) *  &
+        cobalt%c_2_n * cobalt%Rho_0 * 12e-3,   &
+        model_time, rmask = grid_tmask,&
+        is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+
+    if (cobalt%id_chlmixo .gt. 0)            &
+        used = g_send_data(cobalt%id_chlmixo,  mixo(1)%theta * (cobalt%p_nmx(:,:,:,tau)) *  &
         cobalt%c_2_n * cobalt%Rho_0 * 12e-3,   &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
@@ -12436,6 +12468,11 @@ write (stdlogunit, generic_COBALT_nml)
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
+    if (cobalt%id_ppmixo .gt. 0)            &
+        used = g_send_data(cobalt%id_ppmixo,  mixo(1)%jprod_n * rho_dzt * cobalt%c_2_n / dzt,  &
+        model_time, rmask = grid_tmask,&
+        is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+
 ! CHECK3 _z regridding 
 ! CAS fixed conversion for all bddt terms 
     if (cobalt%id_bddtdic .gt. 0)            &
@@ -12484,7 +12521,7 @@ write (stdlogunit, generic_COBALT_nml)
 ! CAS: fixed conversion
     if (cobalt%id_graz .gt. 0)            &
         used = g_send_data(cobalt%id_graz,  (phyto(DIAZO)%jzloss_n +  phyto(LARGE)%jzloss_n +  &
-        phyto(SMALL)%jzloss_n) * cobalt%c_2_n  * rho_dzt / dzt,  &
+        phyto(SMALL)%jzloss_n + mixo(1)%jzloss_n) * cobalt%c_2_n  * rho_dzt / dzt,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -12521,6 +12558,11 @@ write (stdlogunit, generic_COBALT_nml)
     if (cobalt%id_phycos .gt. 0)            &
         used = g_send_data(cobalt%id_phycos,  (cobalt%p_nlg(:,:,1,tau) + cobalt%p_nsm(:,:,1,tau) +  &
         cobalt%p_ndi(:,:,1,tau)) * cobalt%c_2_n * cobalt%Rho_0, &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+    if (cobalt%id_mixocos .gt. 0)            &
+        used = g_send_data(cobalt%id_mixocos,  (cobalt%p_nmx(:,:,1,tau)) * cobalt%c_2_n * cobalt%Rho_0, &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -12567,6 +12609,11 @@ write (stdlogunit, generic_COBALT_nml)
 
     if (cobalt%id_phymiscos.gt. 0)  &
         used = g_send_data(cobalt%id_phymiscos,  (cobalt%p_nlg(:,:,1,tau)-cobalt%nlg_diatoms(:,:,1)) * cobalt%c_2_n * cobalt%Rho_0,  &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+    if (cobalt%id_mixoos.gt. 0)  &
+        used = g_send_data(cobalt%id_mixoos,  cobalt%p_nmx(:,:,1,tau) * cobalt%c_2_n * cobalt%Rho_0,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -12667,6 +12714,11 @@ write (stdlogunit, generic_COBALT_nml)
     if (cobalt%id_chlmiscos .gt. 0)            &
         used = g_send_data(cobalt%id_chlmiscos,  phyto(LARGE)%theta(:,:,1) * (cobalt%p_nlg(:,:,1,tau)-cobalt%nlg_diatoms(:,:,1)) *  &
         cobalt%c_2_n * cobalt%Rho_0 * 12e3,   &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+    if (cobalt%id_chlmixoos .gt. 0)            &
+        used = g_send_data(cobalt%id_chlmixoos,  mixo(1)%theta(:,:,1) * cobalt%p_nmx(:,:,1,tau) * cobalt%c_2_n * cobalt%Rho_0 * 12e3,   &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -12771,6 +12823,11 @@ write (stdlogunit, generic_COBALT_nml)
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
+    if (cobalt%id_limnmixo .gt. 0)            &
+        used = g_send_data(cobalt%id_limnmixo,  mixo(1)%nlim_bw_100, &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
     if (cobalt%id_limirrdiat .gt. 0)            &
         used = g_send_data(cobalt%id_limirrdiat,  phyto(LARGE)%irrlim_bw_100,  &
         model_time, rmask = grid_tmask(:,:,1),&
@@ -12788,6 +12845,11 @@ write (stdlogunit, generic_COBALT_nml)
 
     if (cobalt%id_limirrmisc .gt. 0)            &
         used = g_send_data(cobalt%id_limirrmisc,  phyto(LARGE)%irrlim_bw_100,  &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+    if (cobalt%id_limirrmixo .gt. 0)            &
+        used = g_send_data(cobalt%id_limirrmixo,  mixo(1)%irrlim_bw_100,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -12811,6 +12873,11 @@ write (stdlogunit, generic_COBALT_nml)
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
+    if (cobalt%id_limfemixo .gt. 0)            &
+        used = g_send_data(cobalt%id_limfemixo,  mixo(1)%def_fe_bw_100,  &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
 ! added by JGJ, not requested for CMIP6
     if (cobalt%id_limpdiat .gt. 0)            &
         used = g_send_data(cobalt%id_limpdiat,  phyto(LARGE)%plim_bw_100, &
@@ -12829,6 +12896,11 @@ write (stdlogunit, generic_COBALT_nml)
 
     if (cobalt%id_limpmisc .gt. 0)            &
         used = g_send_data(cobalt%id_limpmisc,  phyto(LARGE)%plim_bw_100, &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+    if (cobalt%id_limpmixo .gt. 0)            &
+        used = g_send_data(cobalt%id_limpmixo,  mixo(1)%plim_bw_100, &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
@@ -12865,6 +12937,11 @@ write (stdlogunit, generic_COBALT_nml)
 ! CAS: can now use jprod_diat_100 to back out misc production
     if (cobalt%id_intppmisc .gt. 0)            &
         used = g_send_data(cobalt%id_intppmisc,  (phyto(LARGE)%jprod_n_100 - cobalt%jprod_diat_100)  * cobalt%c_2_n,  &
+        model_time, rmask = grid_tmask(:,:,1),&
+        is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
+
+    if (cobalt%id_intppmixo .gt. 0)            &
+        used = g_send_data(cobalt%id_intppmixo,  mixo(1)%jprod_n_100 * cobalt%c_2_n,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
