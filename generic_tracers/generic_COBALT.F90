@@ -9528,6 +9528,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_set_values(tracer_list,'mu_mem_ndi' ,'field',phyto(DIAZO)%f_mu_mem ,isd,jsd,ntau=1)
     call g_tracer_set_values(tracer_list,'mu_mem_nlg' ,'field',phyto(LARGE)%f_mu_mem ,isd,jsd,ntau=1)
     call g_tracer_set_values(tracer_list,'mu_mem_nsm' ,'field',phyto(SMALL)%f_mu_mem ,isd,jsd,ntau=1)
+    call g_tracer_set_values(tracer_list,'mu_mem_nmx' ,'field',mixo(1)%f_mu_mem ,isd,jsd,ntau=1)
 
     ! CAS calculate totals after source/sinks have been applied
     imbal_flag = 0;
@@ -9540,7 +9541,7 @@ write (stdlogunit, generic_COBALT_nml)
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec  !{
          post_totn(i,j,k) = (cobalt%p_no3(i,j,k,tau) + cobalt%p_nh4(i,j,k,tau) + &
                     cobalt%p_ndi(i,j,k,tau) + cobalt%p_nlg(i,j,k,tau) + &
-                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
+                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nmx(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
@@ -9554,7 +9555,7 @@ write (stdlogunit, generic_COBALT_nml)
          post_totc(i,j,k) = (cobalt%p_dic(i,j,k,tau) + &
                     cobalt%p_cadet_arag(i,j,k,tau) + cobalt%p_cadet_calc(i,j,k,tau) + &
                     cobalt%c_2_n*(cobalt%p_ndi(i,j,k,tau) + cobalt%p_nlg(i,j,k,tau) + &
-                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
+                    cobalt%p_nsm(i,j,k,tau) + cobalt%p_nmx(i,j,k,tau) + cobalt%p_nbact(i,j,k,tau) + &
                     cobalt%p_ldon(i,j,k,tau) + cobalt%p_sldon(i,j,k,tau) + &
                     cobalt%p_srdon(i,j,k,tau) +  cobalt%p_ndet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau) + cobalt%p_nmdz(i,j,k,tau) + &
@@ -9568,6 +9569,7 @@ write (stdlogunit, generic_COBALT_nml)
          post_totp(i,j,k) = (cobalt%p_po4(i,j,k,tau) + cobalt%p_ndi(i,j,k,tau)*phyto(1)%p_2_n_static + &
                     cobalt%p_nlg(i,j,k,tau)*phyto(2)%p_2_n_static + &
                     cobalt%p_nsm(i,j,k,tau)*phyto(3)%p_2_n_static + &
+                    cobalt%p_nmx(i,j,k,tau)*mixo(1)%p_2_n_static + &
                     cobalt%p_ldop(i,j,k,tau) + cobalt%p_sldop(i,j,k,tau) + &
                     cobalt%p_srdop(i,j,k,tau) +  cobalt%p_pdet(i,j,k,tau) + &
                     cobalt%p_nsmz(i,j,k,tau)*zoo(1)%q_p_2_n + &
@@ -9582,7 +9584,7 @@ write (stdlogunit, generic_COBALT_nml)
 
          post_totfe(i,j,k) = (cobalt%p_fed(i,j,k,tau) + cobalt%p_fedi(i,j,k,tau) + &
                     cobalt%p_felg(i,j,k,tau) + cobalt%p_fesm(i,j,k,tau) + &
-                    cobalt%p_fedet(i,j,k,tau))*grid_tmask(i,j,k)
+                    cobalt%p_femx(i,j,k,tau) + cobalt%p_fedet(i,j,k,tau))*grid_tmask(i,j,k)
          imbal = (post_totfe(i,j,k) - pre_totfe(i,j,k) - net_srcfe(i,j,k))*86400.0/dt*1.03e6
          if (abs(imbal).gt.1.0e-10) then
            call mpp_error(FATAL,&
