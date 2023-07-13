@@ -477,7 +477,7 @@ module generic_COBALT
           k_po4,         &
           P_C_max,       &
           thetamax,      &     
-          bresp,         &
+          bresp_auto,         &
           agg,           &
           frac_mu_agg,   &
           vir,           &            
@@ -485,6 +485,7 @@ module generic_COBALT
      	imax,             & ! maximum ingestion rate (sec-1)         
           ki,               & ! half-sat for ingestion (moles N m-3)
           gge_max,          & ! max gross growth efficiciency (approached as i >> bresp, dimensionless)
+          bresp_hetero,            & ! basal respiration rate (sec-1)
           nswitch,          & ! switching parameter (dimensionless)
           mswitch,          & ! switching parameter (dimensionless)
           ktemp,            & ! temperature dependence of zooplankton rates (C-1)
@@ -5984,7 +5985,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('alpha_Mx', mixo(1)%alpha,  2.4e-5*2.77e18/6.022e17)      ! g C g Chl-1 m-2 J-1
     call g_tracer_add_param('P_C_max_Mx', mixo(1)%P_C_max, 1.25/sperd)               ! s-1
     call g_tracer_add_param('thetamax_Mx', mixo(1)%thetamax, 0.03)                    ! g Chl g C-1
-    call g_tracer_add_param('bresp_Mx', mixo(1)%bresp,0.03/sperd)                     ! sec-1 
+    call g_tracer_add_param('bresp_auto_Mx', mixo(1)%bresp_auto,0.03/sperd)                     ! sec-1 
     !
     !-----------------------------------------------------------------------
     ! Nitrogen fixation inhibition parameters
@@ -6085,7 +6086,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('ki_mx',mixo(1)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ktemp_mx',mixo(1)%ktemp, 0.063)                   ! C-1
     call g_tracer_add_param('gge_max_mx',mixo(1)%gge_max, 0.4)                   ! dimensionless
-    call g_tracer_add_param('bresp_mx',mixo(1)%bresp, 0.9*0.020 / sperd)        ! s-1
+    call g_tracer_add_param('bresp_hetero_mx',mixo(1)%bresp_hetero, 0.9*0.020 / sperd)        ! s-1
     !
     !-----------------------------------------------------------------------
     ! Bacterial growth and uptake parameters
@@ -7658,7 +7659,7 @@ write (stdlogunit, generic_COBALT_nml)
 
        ! calculate the growth rate
        mixo(1)%mu(i,j,k) = P_C_m / (1.0 + cobalt%zeta) * mixo(1)%irrlim(i,j,k) - &
-            cobalt%expkT(i,j,k)*mixo(1)%bresp*                                      &
+            cobalt%expkT(i,j,k)*mixo(1)%bresp_auto*                                      &
             mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
 
        ! calculate net production by mixotroph group
@@ -8547,7 +8548,7 @@ write (stdlogunit, generic_COBALT_nml)
        assim_eff = 1.0-mixo(1)%phi_det-mixo(1)%phi_ldon-mixo(1)%phi_sldon-mixo(1)%phi_srdon
        mixo(1)%jprod_n(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k) - &
                                      mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))* &
-                                     mixo(1)%temp_lim(i,j,k)*mixo(1)%bresp*mixo(1)%f_n(i,j,k)
+                                     mixo(1)%temp_lim(i,j,k)*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
        mixo(1)%jprod_n(i,j,k) = min(mixo(1)%jprod_n(i,j,k), &
                                      assim_eff*mixo(1)%jingest_p(i,j,k)/mixo(1)%q_p_2_n(i,j,k))
   
