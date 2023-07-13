@@ -918,6 +918,7 @@ module generic_COBALT
           jndi,&
           jnsm,&
           jnlg,&
+          jnmx,&
           jnsmz,&
           jnmdz,&
           jnlgz,&
@@ -933,6 +934,7 @@ module generic_COBALT
           jfedi,&
           jfelg,&
           jfesm,&
+          jfemx,&
           jfedet,&
           jldon,&
           jldop,&
@@ -1154,6 +1156,7 @@ module generic_COBALT
           p_fedi,&
           p_felg,&
           p_fesm,&
+          p_femx,&
           p_ldon,&
           p_ldop,&
           p_lith,&
@@ -1163,6 +1166,7 @@ module generic_COBALT
           p_ndi,&
           p_nlg,&
           p_nsm,&
+          p_nmx,&
           p_nh4,&
           p_no3,&
           p_o2,&
@@ -1213,6 +1217,7 @@ module generic_COBALT
           id_ndi           = -1,       &
           id_nlg           = -1,       &
           id_nsm           = -1,       &
+          id_nmx           = -1,       &
           id_nsmz          = -1,       &
           id_nmdz          = -1,       &
           id_nlgz          = -1,       & 
@@ -1226,6 +1231,7 @@ module generic_COBALT
           id_fedi          = -1,       &
           id_felg          = -1,       &
           id_fesm          = -1,       &
+          id_femx          = -1,       &
           id_ldon          = -1,       &
           id_ldop          = -1,       &
           id_lith          = -1,       &
