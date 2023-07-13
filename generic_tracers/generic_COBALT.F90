@@ -8654,8 +8654,8 @@ write (stdlogunit, generic_COBALT_nml)
                        (zoo(2)%jhploss_n(i,j,k) + zoo(3)%jhploss_n(i,j,k))*cobalt%hp_phi_det)* &
                        cobalt%ca_2_n_arag*min(cobalt%caco3_sat_max, max(0.0,cobalt%omega_arag(i,j,k) - 1.0)) + epsln 
         cobalt%jprod_cadet_calc(i,j,k) = (zoo(1)%jzloss_n(i,j,k)*zoo(2)%phi_det + & 
-                       phyto(SMALL)%jzloss_n(i,j,k)*zoo(1)%phi_det + phyto(LARGE)%jzloss_n(i,j,k)*zoo(3)%phi_det + &  
-                       phyto(SMALL)%jaggloss_n(i,j,k) + phyto(LARGE)%jaggloss_n(i,j,k))*cobalt%ca_2_n_calc* &
+                       phyto(SMALL)%jzloss_n(i,j,k)*zoo(1)%phi_det + mixo(1)%jzloss_n(i,j,k)*zoo(1)%phi_det + phyto(LARGE)%jzloss_n(i,j,k)*zoo(3)%phi_det + &  
+                       phyto(SMALL)%jaggloss_n(i,j,k) + mixo(1)%jaggloss_n(i,j,k) + phyto(LARGE)%jaggloss_n(i,j,k))*cobalt%ca_2_n_calc* &
                        min(cobalt%caco3_sat_max, max(0.0, cobalt%omega_calc(i,j,k) - 1.0)) + epsln
     enddo; enddo ; enddo !} i,j,k
 
