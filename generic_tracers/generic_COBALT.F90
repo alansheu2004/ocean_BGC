@@ -6978,11 +6978,11 @@ write (stdlogunit, generic_COBALT_nml)
          units      = 'sec-1',         &
          prog       = .false.              )
 
-!     call g_tracer_add(tracer_list,package_name,&
-!          name       = 'mu_mem_nmx',           &
-!          longname   = 'Mixotroph Growth memory', &
-!          units      = 'sec-1',         &
-!          prog       = .false.              )
+    call g_tracer_add(tracer_list,package_name,&
+         name       = 'mu_mem_nmx',           &
+         longname   = 'Mixotroph Growth memory', &
+         units      = 'sec-1',         &
+         prog       = .false.              )
 
     if (do_nh3_atm_ocean_exchange .or. scheme_nitrif.eq.2 .or. scheme_nitrif.eq.3) then
        call g_tracer_add(tracer_list,package_name,&
