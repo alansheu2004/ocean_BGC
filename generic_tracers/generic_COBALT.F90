@@ -9150,7 +9150,7 @@ write (stdlogunit, generic_COBALT_nml)
        !
        ! Mixotroph Nitrogen
        !
-       cobalt%jnmx(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k) -    &
+       cobalt%jnmx(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k) + mixo(1)%jprod_n_hetero(i,j,k) -    &
                             mixo(1)%jzloss_n(i,j,k) - mixo(1)%jhploss_n(i,j,k) -         &
                             mixo(1)%jaggloss_n(i,j,k) - mixo(1)%jvirloss_n(i,j,k) -      &
                             mixo(1)%jexuloss_n(i,j,k)                                         
@@ -9244,7 +9244,7 @@ write (stdlogunit, generic_COBALT_nml)
     do k = 1, nk ; do j = jsc, jec ; do i = isc, iec  !{
        cobalt%jno3(i,j,k) =  cobalt%jnitrif(i,j,k) - phyto(DIAZO)%juptake_no3(i,j,k) -  &
                              phyto(LARGE)%juptake_no3(i,j,k) - phyto(SMALL)%juptake_no3(i,j,k) - &
-                             cobalt%jno3denit_wc(i,j,k)
+                             mixo(1)%juptake_no3(i,j,k) - cobalt%jno3denit_wc(i,j,k)
        cobalt%p_no3(i,j,k,tau) = cobalt%p_no3(i,j,k,tau) + cobalt%jno3(i,j,k)*dt*grid_tmask(i,j,k)
     enddo; enddo ; enddo  !} i,j,k
     !
@@ -9256,13 +9256,14 @@ write (stdlogunit, generic_COBALT_nml)
        !
        cobalt%jnh4(i,j,k) = cobalt%jprod_nh4(i,j,k) - phyto(DIAZO)%juptake_nh4(i,j,k) - &
                             phyto(LARGE)%juptake_nh4(i,j,k) - phyto(SMALL)%juptake_nh4(i,j,k) - &
-                            cobalt%jnitrif(i,j,k)
+                            mixo(1)%juptake_nh4(i,j,k) - cobalt%jnitrif(i,j,k)
        cobalt%p_nh4(i,j,k,tau) = cobalt%p_nh4(i,j,k,tau) + cobalt%jnh4(i,j,k) * dt * grid_tmask(i,j,k)
        !
        ! PO4
        !
        cobalt%jpo4(i,j,k) = cobalt%jprod_po4(i,j,k) - phyto(DIAZO)%juptake_po4(i,j,k) - &
-                            phyto(LARGE)%juptake_po4(i,j,k) - phyto(SMALL)%juptake_po4(i,j,k)
+                            phyto(LARGE)%juptake_po4(i,j,k) - phyto(SMALL)%juptake_po4(i,j,k) - &
+                            mixo(1)%juptake_po4(i,j,k)
        cobalt%p_po4(i,j,k,tau) = cobalt%p_po4(i,j,k,tau) + cobalt%jpo4(i,j,k) * dt * grid_tmask(i,j,k)
        !
        ! SiO4
@@ -9279,8 +9280,8 @@ write (stdlogunit, generic_COBALT_nml)
           !
        cobalt%jprod_fed(i,j,k) = cobalt%jprod_fed(i,j,k) + cobalt%jfe_coast(i,j,k) 
        cobalt%jfed(i,j,k) = cobalt%jprod_fed(i,j,k) - phyto(DIAZO)%juptake_fe(i,j,k) - &
-                            phyto(LARGE)%juptake_fe(i,j,k) -  phyto(SMALL)%juptake_fe(i,j,k) - &
-                            cobalt%jfe_ads(i,j,k)
+                            phyto(LARGE)%juptake_fe(i,j,k) - phyto(SMALL)%juptake_fe(i,j,k) - &
+                            mixo(1)%juptake_fe(i,j,k) - cobalt%jfe_ads(i,j,k)
        cobalt%p_fed(i,j,k,tau) = cobalt%p_fed(i,j,k,tau) + cobalt%jfed(i,j,k) * dt * grid_tmask(i,j,k)
     enddo; enddo; enddo  !} i,j,k
 
@@ -9393,10 +9394,10 @@ write (stdlogunit, generic_COBALT_nml)
     !
     do k = 1, nk ; do j =jsc, jec ; do i = isc, iec  !{
        cobalt%jo2(i,j,k) = (cobalt%o2_2_no3 * (phyto(DIAZO)%juptake_no3(i,j,k) +   &
-            phyto(LARGE)%juptake_no3(i,j,k) + phyto(SMALL)%juptake_no3(i,j,k)) + & 
+            phyto(LARGE)%juptake_no3(i,j,k) + phyto(SMALL)%juptake_no3(i,j,k) + mixo(1)%juptake_no3(i,j,k)) + & 
              cobalt%o2_2_nh4 *       &
             (phyto(DIAZO)%juptake_nh4(i,j,k) + phyto(LARGE)%juptake_nh4(i,j,k) +      &
-            phyto(SMALL)%juptake_nh4(i,j,k) + &  
+            phyto(SMALL)%juptake_nh4(i,j,k) + mixo(1)%juptake_nh4(i,j,k) + &  
             phyto(DIAZO)%juptake_n2(i,j,k))) * grid_tmask(i,j,k)
        cobalt%jo2(i,j,k) = cobalt%jo2(i,j,k) - cobalt%jo2resp_wc(i,j,k)
        cobalt%p_o2(i,j,k,tau) = cobalt%p_o2(i,j,k,tau) + cobalt%jo2(i,j,k) * dt * grid_tmask(i,j,k)
@@ -9413,11 +9414,11 @@ write (stdlogunit, generic_COBALT_nml)
        cobalt%jalk(i,j,k) = 2.0 * (cobalt%jdiss_cadet_arag(i,j,k) +        &
           cobalt%jdiss_cadet_calc(i,j,k) - cobalt%jprod_cadet_arag(i,j,k) - &
           cobalt%jprod_cadet_calc(i,j,k)) + phyto(DIAZO)%juptake_no3(i,j,k) + &
-          phyto(LARGE)%juptake_no3(i,j,k) + phyto(SMALL)%juptake_no3(i,j,k) + &
+          phyto(LARGE)%juptake_no3(i,j,k) + phyto(SMALL)%juptake_no3(i,j,k) + mixo(1)%juptake_no3(i,j,k) + &
           (cobalt%jo2resp_wc(i,j,k)-cobalt%jnitrif(i,j,k)*cobalt%o2_2_nitrif)/cobalt%o2_2_nh4 + &
           cobalt%alk_2_n_denit*cobalt%jno3denit_wc(i,j,k) - & 
           phyto(DIAZO)%juptake_nh4(i,j,k) - phyto(LARGE)%juptake_nh4(i,j,k) - &  
-          phyto(SMALL)%juptake_nh4(i,j,k) - 2.0 * cobalt%jnitrif(i,j,k)
+          phyto(SMALL)%juptake_nh4(i,j,k) - mixo(1)%juptake_nh4(i,j,k) - 2.0 * cobalt%jnitrif(i,j,k)
 
        cobalt%p_alk(i,j,k,tau) = cobalt%p_alk(i,j,k,tau) + cobalt%jalk(i,j,k) * dt * grid_tmask(i,j,k)
        !
