@@ -7686,7 +7686,7 @@ write (stdlogunit, generic_COBALT_nml)
 
        ! calculate the growth rate
        mixo(1)%mu(i,j,k) = P_C_m / (1.0 + cobalt%zeta) * mixo(1)%irrlim(i,j,k) - &
-            cobalt%expkT(i,j,k)*mixo(1)%bresp_auto*                                      &
+            cobalt%expkT(i,j,k)*0.5*mixo(1)%bresp_auto*                                      &
             mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
 
        ! calculate net production by mixotroph group
@@ -8575,7 +8575,7 @@ write (stdlogunit, generic_COBALT_nml)
        assim_eff = 1.0-mixo(1)%phi_det-mixo(1)%phi_ldon-mixo(1)%phi_sldon-mixo(1)%phi_srdon
        mixo(1)%jprod_n_hetero(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k) - &
                                      mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))* &
-                                     mixo(1)%temp_lim(i,j,k)*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
+                                     mixo(1)%temp_lim(i,j,k)*0.5*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
        mixo(1)%jprod_n_hetero(i,j,k) = min(mixo(1)%jprod_n_hetero(i,j,k), &
                                      assim_eff*mixo(1)%jingest_p(i,j,k)/mixo(1)%q_p_2_n(i,j,k))
   
