@@ -7675,7 +7675,7 @@ write (stdlogunit, generic_COBALT_nml)
        enddo !} n
 
        ! Mixotrophs
-       P_C_m = mixo(1)%eta * mixo(1)%epsilon * max(mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
+       P_C_m = max(mixo(1)%eta * mixo(1)%epsilon * mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
        mixo(1)%theta(i,j,k) = (mixo(1)%thetamax-cobalt%thetamin) / (1.0 +                   &
             mixo(1)%thetamax*mixo(1)%alpha*cobalt%f_irr_mem(i,j,k)*0.5 /  &
             P_C_m) + cobalt%thetamin
@@ -14946,5 +14946,3 @@ write (stdlogunit, generic_COBALT_nml)
 
  
 end module generic_COBALT
-! TEST COMMENT
-
