@@ -6365,7 +6365,7 @@ write (stdlogunit, generic_COBALT_nml)
     !-----------------------------------------------------------------------
     !
     call g_tracer_add_param('epsilon', mixo(1)%epsilon, 0.5)               ! none
-    call g_tracer_add_param('eta', mixo(1)%eta, 0.0)                       ! none
+    call g_tracer_add_param('eta', mixo(1)%eta, 0.9)                       ! none
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
@@ -12352,7 +12352,7 @@ write (stdlogunit, generic_COBALT_nml)
 ! also in Omon
     if (cobalt%id_pp .gt. 0)            &
         used = g_send_data(cobalt%id_pp,  (phyto(DIAZO)%jprod_n +  phyto(LARGE)%jprod_n +  &
-        phyto(SMALL)%jprod_n) * rho_dzt * cobalt%c_2_n / dzt,  &
+        phyto(SMALL)%jprod_n + mixo(1)%jprod_n_auto) * rho_dzt * cobalt%c_2_n / dzt,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -12908,7 +12908,7 @@ write (stdlogunit, generic_COBALT_nml)
 ! JGJ 2016/08/08 CMIP6 OcnBgchem Omon: Marine Biogeochemical 2-D Fields  
 
     if (cobalt%id_intpp .gt. 0)            &
-        used = g_send_data(cobalt%id_intpp,  cobalt%jprod_allphytos_100 * cobalt%c_2_n, &
+        used = g_send_data(cobalt%id_intpp,  (cobalt%jprod_allphytos_100 + mixo(1)%jprod_n_auto_100) * cobalt%c_2_n, &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
