@@ -12359,7 +12359,7 @@ write (stdlogunit, generic_COBALT_nml)
 ! also in Omon
     if (cobalt%id_pnitrate .gt. 0)            &
         used = g_send_data(cobalt%id_pnitrate,  (phyto(DIAZO)%juptake_no3 +  phyto(LARGE)%juptake_no3 +  &
-        phyto(SMALL)%juptake_no3) * rho_dzt * cobalt%c_2_n / dzt,  &
+        phyto(SMALL)%juptake_no3 + mixo(1)%juptake_no3) * rho_dzt * cobalt%c_2_n / dzt,  &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
 
@@ -12914,7 +12914,7 @@ write (stdlogunit, generic_COBALT_nml)
 
     if (cobalt%id_intppnitrate .gt. 0)            &
         used = g_send_data(cobalt%id_intppnitrate,  (phyto(DIAZO)%jprod_n_new_100 +  phyto(LARGE)%jprod_n_new_100 +  &
-        phyto(SMALL)%jprod_n_new_100) * cobalt%c_2_n,  &
+        phyto(SMALL)%jprod_n_new_100 + mixo(1)%jprod_n_new_100) * cobalt%c_2_n,  &
         model_time, rmask = grid_tmask(:,:,1),&
         is_in=isc, js_in=jsc, ie_in=iec, je_in=jec)
 
