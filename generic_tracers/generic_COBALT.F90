@@ -2460,7 +2460,7 @@ write (stdlogunit, generic_COBALT_nml)
     mixo(1)%id_juptake_po4 = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-    vardesc_temp = vardesc("jprod_nmx","Mixotroph Primary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
+    vardesc_temp = vardesc("jprod_nmx_auto","Mixotroph Primary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
     mixo(1)%id_jprod_n_auto = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
@@ -2478,6 +2478,10 @@ write (stdlogunit, generic_COBALT_nml)
 
     vardesc_temp = vardesc("temp_lim_Mx","Temperature limitation of mixotrophs",'h','L','s','dimensionless','f')
     mixo(1)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     vardesc_temp = vardesc("jprod_nmx_hetero","Mixotroph Secondary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_hetero = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     !
