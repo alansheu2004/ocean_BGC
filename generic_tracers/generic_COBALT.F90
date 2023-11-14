@@ -429,7 +429,10 @@ module generic_COBALT
           jprod_nh4,        & ! ammonia production by zooplankton
           jprod_n,          & ! zooplankton production
           o2lim,            & ! oxygen limitation of zooplankton activity
-          temp_lim            ! Temperature limitation
+          temp_lim,         & ! Temperature limitation
+          jingest_n_bact, &
+          jingest_n_sm, &
+          jingest_n_mx
     integer ::		    &
           id_jzloss_n       = -1, &
           id_jzloss_p       = -1, &
@@ -463,7 +466,10 @@ module generic_COBALT
           id_jprod_ndet_100 = -1, &
           id_jprod_don_100  = -1, &
           id_jremin_n_100   = -1, &
-          id_f_n_100        = -1
+          id_f_n_100        = -1, &
+          id_jingest_n_bact  = -1, &
+          id_jingest_n_sm   = -1, &
+          id_jingest_n_mx   = -1
   end type zooplankton
 
   type mixotroph
@@ -588,7 +594,9 @@ module generic_COBALT
           jprod_sio4,       & ! production of silicate via rapid dissolution at surface
           jprod_po4,        & ! phosphate production by mixotroph
           jprod_nh4,        & ! ammonia production by mixotroph
-          temp_lim            ! Temperature limitation
+          temp_lim, &           ! Temperature limitation
+          jingest_n_bact, &
+          jingest_n_sm
 		              
      integer ::            &
           id_def_fe       = -1, & 
@@ -682,7 +690,9 @@ module generic_COBALT
           !id_jhploss_n_100  = -1, &
           id_jprod_ndet_100 = -1, &
           id_jprod_don_100  = -1, &
-          id_jremin_n_100   = -1
+          id_jremin_n_100   = -1, &
+          id_jingest_n_bact  = -1, &
+          id_jingest_n_sm   = -1
 		  
   end type mixotroph
   
@@ -2467,7 +2477,7 @@ write (stdlogunit, generic_COBALT_nml)
     !
     ! Register secondary mixotroph production terms 
     !
-    vardesc_temp = vardesc("jprod_nlgz","Secondary Production of new biomass (nitrogen) by mixotrophs, layer integral",&
+    vardesc_temp = vardesc("jprod_nmx_hetero","Secondary Production of new biomass (nitrogen) by mixotrophs, layer integral",&
                            'h','L','s','mol N m-2 s-1','f')
     mixo(1)%id_jprod_n_hetero = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -2478,10 +2488,6 @@ write (stdlogunit, generic_COBALT_nml)
 
     vardesc_temp = vardesc("temp_lim_Mx","Temperature limitation of mixotrophs",'h','L','s','dimensionless','f')
     mixo(1)%id_temp_lim = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-     vardesc_temp = vardesc("jprod_nmx_hetero","Mixotroph Secondary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
-    mixo(1)%id_jprod_n_hetero = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     !
@@ -5818,6 +5824,28 @@ write (stdlogunit, generic_COBALT_nml)
          cmor_standard_name="integral_wrt_depth_of_tendency_of_sea_water_alkalinity_expressed_as_mole_equivalent_due_to_biological_processes", &
          cmor_long_name="Rate of Change of Biological Alkalinity due to Biological Activity")
 
+      ! Diagnostics for mixotroph prey consumption
+
+     vardesc_temp = vardesc("mx_jingest_n_sm","Mixotroph Consumption of Sm. Phytoplankton",'h','1','s','mol m-3 s-1','f')
+     mixo(1)%id_jingest_n_sm= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     vardesc_temp = vardesc("mx_jingest_n_bact","Mixotroph Consumption of Bacteria",'h','1','s','mol m-3 s-1','f')
+     mixo(1)%id_jingest_n_bact= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     vardesc_temp = vardesc("smz_jingest_n_bact","Sm. Zooplankton Consumption of Bacteria",'h','1','s','mol m-3 s-1','f')
+     zoo(1)%id_jingest_n_bact= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     vardesc_temp = vardesc("smz_jingest_n_mx","Sm. Zooplankton Consumption of Mixotrophs",'h','1','s','mol m-3 s-1','f')
+     zoo(1)%id_jingest_n_mx= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+     vardesc_temp = vardesc("smz_jingest_n_sm","Sm. Zooplankton Consumption of Sm. Phytoplankton",'h','1','s','mol m-3 s-1','f')
+     zoo(1)%id_jingest_n_sm= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
 !------------------------------------------------------------------------------------------------------------------
 ! 2-D fields (from Oday)  
 
@@ -6113,11 +6141,11 @@ write (stdlogunit, generic_COBALT_nml)
     ! Mixotroph ingestion and bioenergetics
     !-----------------------------------------------------------------------
     !
-    call g_tracer_add_param('imax_mx',mixo(1)%imax, 0.9*1.42 / sperd)              ! s-1
+    call g_tracer_add_param('imax_mx',mixo(1)%imax, 1.74 / sperd)              ! s-1
     call g_tracer_add_param('ki_mx',mixo(1)%ki, 1.25e-6)                       ! moles N kg-1
     call g_tracer_add_param('ktemp_mx',mixo(1)%ktemp, 0.063)                   ! C-1
     call g_tracer_add_param('gge_max_mx',mixo(1)%gge_max, 0.4)                   ! dimensionless
-    call g_tracer_add_param('bresp_hetero_mx',mixo(1)%bresp_hetero, 0.9*0.020 / sperd)        ! s-1
+    call g_tracer_add_param('bresp_hetero_mx',mixo(1)%bresp_hetero, 0.025 / sperd)        ! s-1
     !
     !-----------------------------------------------------------------------
     ! Bacterial growth and uptake parameters
@@ -6144,7 +6172,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('mswitch_lgz',zoo(3)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_mx',mixo(1)%mswitch, 2.0)          ! dimensionless
     ! innate prey availability for mixotrophs
-    call g_tracer_add_param('mx_ipa_smp',mixo(1)%ipa_smp, 0.25)    ! dimensionless
+    call g_tracer_add_param('mx_ipa_smp',mixo(1)%ipa_smp, 0.5)    ! dimensionless
     call g_tracer_add_param('mx_ipa_lgp',mixo(1)%ipa_lgp, 0.0)          ! dimensionless
     call g_tracer_add_param('mx_ipa_diaz',mixo(1)%ipa_diaz,0.0)         ! dimensionless
     call g_tracer_add_param('mx_ipa_mx',mixo(1)%ipa_mx,0.0)         ! dimensionless
@@ -6368,8 +6396,8 @@ write (stdlogunit, generic_COBALT_nml)
     ! Mixotrophy Parameters
     !-----------------------------------------------------------------------
     !
-    call g_tracer_add_param('epsilon', mixo(1)%epsilon, 0.5)               ! none
-    call g_tracer_add_param('eta', mixo(1)%eta, 0.9)                       ! none
+    call g_tracer_add_param('epsilon', mixo(1)%epsilon, 0.0)               ! none
+    call g_tracer_add_param('eta', mixo(1)%eta, 1.0)                       ! none
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
@@ -7679,18 +7707,18 @@ write (stdlogunit, generic_COBALT_nml)
        enddo !} n
 
        ! Mixotrophs
-       P_C_m = max(mixo(1)%eta * mixo(1)%epsilon * mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
-       mixo(1)%theta(i,j,k) = (mixo(1)%thetamax-cobalt%thetamin) / (1.0 +                   &
+       P_C_m = max(mixo(1)%eta * mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
+       mixo(1)%theta(i,j,k) = mixo(1)%epsilon * (mixo(1)%thetamax-cobalt%thetamin) / (1.0 +                   &
             mixo(1)%thetamax*mixo(1)%alpha*cobalt%f_irr_mem(i,j,k)*0.5 /  &
             P_C_m) + cobalt%thetamin
-       cobalt%f_chl(i,j,k) = cobalt%f_chl(i,j,k)+cobalt%c_2_n*12.0e6*mixo(1)%theta(i,j,k)*   &
+       cobalt%f_chl(i,j,k) = cobalt%f_chl(i,j,k)+0.5*cobalt%c_2_n*12.0e6*mixo(1)%theta(i,j,k)*   &
             mixo(1)%f_n(i,j,k)
        mixo(1)%irrlim(i,j,k) = (1.0-exp(-mixo(1)%alpha*cobalt%irr_inst(i,j,k)*              &
             mixo(1)%theta(i,j,k)/P_C_m))
 
        ! calculate the growth rate
        mixo(1)%mu(i,j,k) = P_C_m / (1.0 + cobalt%zeta) * mixo(1)%irrlim(i,j,k) - &
-            cobalt%expkT(i,j,k)*0.5*mixo(1)%bresp_auto*                                      &
+            cobalt%expkT(i,j,k)*mixo(1)%epsilon*mixo(1)%bresp_auto*                                      &
             mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
 
        ! calculate net production by mixotroph group
@@ -8096,6 +8124,10 @@ write (stdlogunit, generic_COBALT_nml)
        zoo(m)%jingest_fe(i,j,k) = ingest_matrix(m,3)*prey_fe2n_vec(3) + &
                                   ingest_matrix(m,4)*prey_fe2n_vec(4)
 
+       zoo(m)%jingest_n_sm(i,j,k) = ingest_matrix(m,3)
+       zoo(m)%jingest_n_mx(i,j,k) = ingest_matrix(m,4)
+       zoo(m)%jingest_n_bact(i,j,k) = ingest_matrix(m,5)
+
        !
        ! Medium zooplankton (m = 2) consuming diazotrophs (1), large
        ! phytoplankton (2), and small zooplankton (6) 
@@ -8189,6 +8221,9 @@ write (stdlogunit, generic_COBALT_nml)
        mixo(1)%jingest_p(i,j,k) = ingest_matrix(m,3)*prey_p2n_vec(3) + &
                                  ingest_matrix(m,5)*prey_p2n_vec(5)
        mixo(1)%jingest_fe(i,j,k) = ingest_matrix(m,3)*prey_fe2n_vec(3)
+
+       mixo(1)%jingest_n_sm(i,j,k) = ingest_matrix(m,3)
+       mixo(1)%jingest_n_bact(i,j,k) = ingest_matrix(m,5)
 
 
        ! Total Filter Feeding
@@ -8579,7 +8614,7 @@ write (stdlogunit, generic_COBALT_nml)
        assim_eff = 1.0-mixo(1)%phi_det-mixo(1)%phi_ldon-mixo(1)%phi_sldon-mixo(1)%phi_srdon
        mixo(1)%jprod_n_hetero(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k) - &
                                      mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))* &
-                                     mixo(1)%temp_lim(i,j,k)*0.5*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
+                                     mixo(1)%temp_lim(i,j,k)*(1.0-mixo(1)%epsilon)*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
        mixo(1)%jprod_n_hetero(i,j,k) = min(mixo(1)%jprod_n_hetero(i,j,k), &
                                      assim_eff*mixo(1)%jingest_p(i,j,k)/mixo(1)%q_p_2_n(i,j,k))
   
@@ -10777,6 +10812,14 @@ write (stdlogunit, generic_COBALT_nml)
             used = g_send_data(mixo(1)%id_temp_lim, mixo(1)%temp_lim,           &
             model_time, rmask = grid_tmask,&
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jingest_n_sm .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jingest_n_sm, mixo(1)%jingest_n_sm*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jingest_n_bact .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jingest_n_bact, mixo(1)%jingest_n_bact*rho_dzt,           &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
     !--------------------------------------------------------------------------------------
     ! Send bacterial diagnostic data
     !
@@ -10920,6 +10963,22 @@ write (stdlogunit, generic_COBALT_nml)
             model_time, rmask = grid_tmask,&
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
     enddo
+
+
+     if (zoo(1)%id_jingest_n_sm .gt. 0)          &
+          used = g_send_data(zoo(1)%id_jingest_n_sm, zoo(1)%jingest_n_sm*rho_dzt,           &
+          model_time, rmask = grid_tmask,&
+          is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+     if (zoo(1)%id_jingest_n_mx .gt. 0)          &
+          used = g_send_data(zoo(1)%id_jingest_n_mx, zoo(1)%jingest_n_mx*rho_dzt,           &
+          model_time, rmask = grid_tmask,&
+          is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+     if (zoo(1)%id_jingest_n_bact .gt. 0)          &
+          used = g_send_data(zoo(1)%id_jingest_n_bact, zoo(1)%jingest_n_bact*rho_dzt,           &
+          model_time, rmask = grid_tmask,&
+          is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+
+
     !
     ! Production diagnostics
     !
@@ -13869,6 +13928,8 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(mixo(1)%jprod_nh4(isd:ied,jsd:jed,nk))     ; mixo(1)%jprod_nh4      = 0.0
     allocate(mixo(1)%o2lim(isd:ied,jsd:jed,nk))        ; mixo(1)%o2lim           = 0.0
     allocate(mixo(1)%temp_lim(isd:ied,jsd:jed,nk))      ; mixo(1)%temp_lim       = 0.0
+    allocate(mixo(1)%jingest_n_sm(isd:ied,jsd:jed,nk))     ; mixo(1)%jingest_n_sm      = 0.0
+    allocate(mixo(1)%jingest_n_bact(isd:ied,jsd:jed,nk))     ; mixo(1)%jingest_n_bact      = 0.0
 		
     !
     ! CAS: allocate and initialize array elements for all zooplankton groups
@@ -13900,6 +13961,9 @@ write (stdlogunit, generic_COBALT_nml)
        allocate(zoo(n)%jprod_n(isd:ied,jsd:jed,nk))      ; zoo(n)%jprod_n         = 0.0
        allocate(zoo(n)%o2lim(isd:ied,jsd:jed,nk))        ; zoo(n)%o2lim           = 0.0
        allocate(zoo(n)%temp_lim(isd:ied,jsd:jed,nk))      ; zoo(n)%temp_lim       = 0.0
+       allocate(zoo(n)%jingest_n_sm(isd:ied,jsd:jed,nk))     ; zoo(1)%jingest_n_sm      = 0.0
+       allocate(zoo(n)%jingest_n_mx(isd:ied,jsd:jed,nk))     ; zoo(1)%jingest_n_mx      = 0.0
+       allocate(zoo(n)%jingest_n_bact(isd:ied,jsd:jed,nk))     ; zoo(1)%jingest_n_bact      = 0.0
     enddo
 
     ! higher predator ingestion
@@ -14442,6 +14506,8 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(mixo(1)%jingest_n_100)
     deallocate(mixo(1)%jremin_n_100)
     deallocate(mixo(1)%jprod_don_100)
+    deallocate(mixo(1)%jingest_n_sm)
+    deallocate(mixo(1)%jingest_n_bact)
 	
     ! zooplankton
     do n = 1, NUM_ZOO
@@ -14471,6 +14537,9 @@ write (stdlogunit, generic_COBALT_nml)
        deallocate(zoo(n)%jprod_n)
        deallocate(zoo(n)%o2lim)
        deallocate(zoo(n)%temp_lim)
+       deallocate(zoo(n)%jingest_n_sm)
+       deallocate(zoo(n)%jingest_n_mx)
+       deallocate(zoo(n)%jingest_n_bact)
     enddo
 
     deallocate(cobalt%f_alk)
