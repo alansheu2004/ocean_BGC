@@ -5826,23 +5826,23 @@ write (stdlogunit, generic_COBALT_nml)
 
       ! Diagnostics for mixotroph prey consumption
 
-     vardesc_temp = vardesc("mx_jingest_n_sm","Mixotroph Consumption of Sm. Phytoplankton",'h','1','s','mol m-3 s-1','f')
+     vardesc_temp = vardesc("jingest_mx_n_sm","Mixotroph Consumption of Sm. Phytoplankton",'h','1','s','mol m-3 s-1','f')
      mixo(1)%id_jingest_n_sm= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
           init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-     vardesc_temp = vardesc("mx_jingest_n_bact","Mixotroph Consumption of Bacteria",'h','1','s','mol m-3 s-1','f')
+     vardesc_temp = vardesc("jingest_mx_n_bact","Mixotroph Consumption of Bacteria",'h','1','s','mol m-3 s-1','f')
      mixo(1)%id_jingest_n_bact= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
           init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-     vardesc_temp = vardesc("smz_jingest_n_bact","Sm. Zooplankton Consumption of Bacteria",'h','1','s','mol m-3 s-1','f')
+     vardesc_temp = vardesc("jingest_smz_n_bact","Sm. Zooplankton Consumption of Bacteria",'h','1','s','mol m-3 s-1','f')
      zoo(1)%id_jingest_n_bact= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
           init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-     vardesc_temp = vardesc("smz_jingest_n_mx","Sm. Zooplankton Consumption of Mixotrophs",'h','1','s','mol m-3 s-1','f')
+     vardesc_temp = vardesc("jingest_smz_n_mx","Sm. Zooplankton Consumption of Mixotrophs",'h','1','s','mol m-3 s-1','f')
      zoo(1)%id_jingest_n_mx= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
           init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
-     vardesc_temp = vardesc("smz_jingest_n_sm","Sm. Zooplankton Consumption of Sm. Phytoplankton",'h','1','s','mol m-3 s-1','f')
+     vardesc_temp = vardesc("jingest_smz_n_sm","Sm. Zooplankton Consumption of Sm. Phytoplankton",'h','1','s','mol m-3 s-1','f')
      zoo(1)%id_jingest_n_sm= register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
           init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
