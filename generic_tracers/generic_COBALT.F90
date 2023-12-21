@@ -514,7 +514,8 @@ module generic_COBALT
           ipa_lgz,          & ! innate prey availability of x-large zooplankton
           ipa_det,          & ! innate prey availability of detritus
           ipa_bact,         & ! innate prey availability for bacteria
-          eta                 ! mixotrophy inefficiency factor
+          eta,              & ! mixotrophy inefficiency factor
+          iota                ! rate of change of psi
      real, ALLOCATABLE, dimension(:,:)  :: &
           jprod_n_auto_100, & 
           jprod_n_hetero_100,& 
@@ -563,7 +564,9 @@ module generic_COBALT
           juptake_no3 , & 
           juptake_po4 , & 
           jprod_n_auto     , & 
+          jprod_n_auto_spec     , & 
           jprod_n_hetero     , & 
+          jprod_n_hetero_spec     , & 
           liebig_lim  , & 
           mu          , &
           f_mu_mem    , &
@@ -631,7 +634,9 @@ module generic_COBALT
           id_juptake_po4  = -1, &
           id_juptake_sio4 = -1, &
           id_jprod_n_auto      = -1, & 
+          id_jprod_n_auto_spec      = -1, & 
           id_jprod_n_hetero      = -1, & 
+          id_jprod_n_hetero_spec      = -1, & 
           id_liebig_lim   = -1, &
           id_mu           = -1, &
           id_f_mu_mem     = -1, &
@@ -957,6 +962,7 @@ module generic_COBALT
           jfesm,&
           jfemx,&
           jpsi_nmx,&
+          jpsi_mx,&
           jfedet,&
           jldon,&
           jldop,&
@@ -2477,6 +2483,14 @@ write (stdlogunit, generic_COBALT_nml)
 
     vardesc_temp = vardesc("jprod_nmx_auto","Mixotroph Primary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
     mixo(1)%id_jprod_n_auto = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_nmx_auto_spec","Mixotroph Specialized Primary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_auto_spec = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
+         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
+
+    vardesc_temp = vardesc("jprod_nmx_hetero_spec","Mixotroph Specialized Secondary Nitrogen production layer integral",'h','L','s','mol m-2 s-1','f')
+    mixo(1)%id_jprod_n_hetero_spec = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
 
     !
@@ -6412,6 +6426,7 @@ write (stdlogunit, generic_COBALT_nml)
     !-----------------------------------------------------------------------
     !
     call g_tracer_add_param('eta', mixo(1)%eta, 1.0)                       ! none
+    call g_tracer_add_param('iota', mixo(1)%iota, 0.01)                     ! s-1
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
@@ -7729,8 +7744,20 @@ write (stdlogunit, generic_COBALT_nml)
 
        mixo(1)%psi(i,j,k) = mixo(1)%psi_n(i,j,k) / mixo(1)%f_n(i,j,k)
 
-       ! Mixotrophs
+       ! Mixotroph Instantaneous Growth Rate
        P_C_m = max(mixo(1)%eta * mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
+
+       mixo(1)%theta(i,j,k) = (mixo(1)%thetamax-cobalt%thetamin) / (1.0 +                   &
+            mixo(1)%thetamax*mixo(1)%alpha*cobalt%irr_inst(i,j,k)*0.5 /  &
+            P_C_m) + cobalt%thetamin
+       mixo(1)%irrlim(i,j,k) = (1.0-exp(-mixo(1)%alpha*cobalt%irr_inst(i,j,k)*              &
+            mixo(1)%theta(i,j,k)/P_C_m))
+       mixo(1)%mu(i,j,k) = P_C_m / (1.0 + cobalt%zeta) * mixo(1)%irrlim(i,j,k) - &
+            cobalt%expkT(i,j,k)*mixo(1)%psi(i,j,k)*mixo(1)%bresp_auto*                                      &
+            mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
+       mixo(1)%jprod_n_auto_spec(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)
+
+       ! Mixotroph Memory Growth Rate
        mixo(1)%theta(i,j,k) = mixo(1)%psi(i,j,k) * (mixo(1)%thetamax-cobalt%thetamin) / (1.0 +                   &
             mixo(1)%thetamax*mixo(1)%alpha*cobalt%f_irr_mem(i,j,k)*0.5 /  &
             P_C_m) + cobalt%thetamin
@@ -7738,13 +7765,9 @@ write (stdlogunit, generic_COBALT_nml)
             mixo(1)%f_n(i,j,k)
        mixo(1)%irrlim(i,j,k) = (1.0-exp(-mixo(1)%alpha*cobalt%irr_inst(i,j,k)*              &
             mixo(1)%theta(i,j,k)/P_C_m))
-
-       ! calculate the growth rate
        mixo(1)%mu(i,j,k) = P_C_m / (1.0 + cobalt%zeta) * mixo(1)%irrlim(i,j,k) - &
             cobalt%expkT(i,j,k)*mixo(1)%psi(i,j,k)*mixo(1)%bresp_auto*                                      &
             mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))
-
-       ! calculate net production by mixotroph group
        mixo(1)%jprod_n_auto(i,j,k) = mixo(1)%mu(i,j,k)*mixo(1)%f_n(i,j,k)
 
        mixo(1)%mu_mix(i,j,k) = mixo(1)%mu(i,j,k)
@@ -8640,6 +8663,12 @@ write (stdlogunit, generic_COBALT_nml)
                                      mixo(1)%temp_lim(i,j,k)*(1.0-mixo(1)%psi(i,j,k))*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
        mixo(1)%jprod_n_hetero(i,j,k) = min(mixo(1)%jprod_n_hetero(i,j,k), &
                                      assim_eff*mixo(1)%jingest_p(i,j,k)/mixo(1)%q_p_2_n(i,j,k))
+       ! Mixotroph Specialized Heterotroph
+       mixo(1)%jprod_n_hetero_spec(i,j,k) = mixo(1)%gge_max*mixo(1)%jingest_n(i,j,k)/(mixo(1)%eta * (1.0-mixo(1)%psi(i,j,k))) - &
+                                     mixo(1)%f_n(i,j,k)/(cobalt%refuge_conc + mixo(1)%f_n(i,j,k))* &
+                                     mixo(1)%temp_lim(i,j,k)*mixo(1)%bresp_hetero*mixo(1)%f_n(i,j,k)
+       mixo(1)%jprod_n_hetero_spec(i,j,k) = min(mixo(1)%jprod_n_hetero_spec(i,j,k), &
+                                     assim_eff*(mixo(1)%jingest_p(i,j,k)/(mixo(1)%eta * (1.0-mixo(1)%psi(i,j,k))))/mixo(1)%q_p_2_n(i,j,k))
   
        !
        ! Ingested material that does not go to zooplankton production, detrital production
@@ -9244,7 +9273,17 @@ write (stdlogunit, generic_COBALT_nml)
        !
        ! Mixotroph Dynamic Psi
        !
-       cobalt%jpsi_nmx(i,j,k) = mixo(1)%psi(i,j,k)*cobalt%jnmx(i,j,k)
+       if (mixo(1)%jprod_n_auto_spec(i,j,k) > mixo(1)%jprod_n_hetero_spec(i,j,k)) then
+          cobalt%jpsi_mx(i,j,k) = mixo(1)%iota * (1.0 - mixo(1)%psi(i,j,k))
+       else if (mixo(1)%jprod_n_auto_spec(i,j,k) < mixo(1)%jprod_n_hetero_spec(i,j,k)) then
+          cobalt%jpsi_mx(i,j,k) = -mixo(1)%iota * mixo(1)%psi(i,j,k)
+       else
+          cobalt%jpsi_mx(i,j,k) = 0.0
+       endif
+       ! dpsi_n/dt = (psi + dpsi/dt * dt) * (dn/dt) = (psi * dn/dt) + (dpsi/dt * dt * dn/dt)
+       ! psi_n = psi * n
+       ! dpsi_n/dt = d/dt (psi*n) = (dpsi/dt * n) + (psi * dn/dt)
+       cobalt%jpsi_nmx(i,j,k) = mixo(1)%psi(i,j,k)*cobalt%jnmx(i,j,k) + cobalt%jpsi_mx(i,j,k)*mixo(1)%f_n(i,j,k)
        cobalt%p_psi_nmx(i,j,k,tau) = cobalt%p_psi_nmx(i,j,k,tau) + cobalt%jpsi_nmx(i,j,k)*dt*grid_tmask(i,j,k)
     enddo; enddo ; enddo  !} i,j,k
 !
@@ -10711,6 +10750,14 @@ write (stdlogunit, generic_COBALT_nml)
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
        if (mixo(1)%id_jprod_n_auto .gt. 0)          &
             used = g_send_data(mixo(1)%id_jprod_n_auto, mixo(1)%jprod_n_auto*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_n_auto_spec .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_n_auto_spec, mixo(1)%jprod_n_auto_spec*rho_dzt,   &
+            model_time, rmask = grid_tmask,&
+            is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+       if (mixo(1)%id_jprod_n_hetero_spec .gt. 0)          &
+            used = g_send_data(mixo(1)%id_jprod_n_hetero_spec, mixo(1)%jprod_n_hetero_spec*rho_dzt,   &
             model_time, rmask = grid_tmask,&
             is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
        if (mixo(1)%id_liebig_lim .gt. 0)      &
@@ -13933,7 +13980,9 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(mixo(1)%juptake_no3(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_no3    = 0.0
     allocate(mixo(1)%juptake_po4(isd:ied,jsd:jed,nk))  ; mixo(1)%juptake_po4    = 0.0
     allocate(mixo(1)%jprod_n_auto(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n_auto       = 0.0
+    allocate(mixo(1)%jprod_n_auto_spec(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n_auto_spec       = 0.0
     allocate(mixo(1)%jprod_n_hetero(isd:ied,jsd:jed,nk))    ; mixo(1)%jprod_n_hetero     = 0.0
+    allocate(mixo(1)%jprod_n_hetero_spec(isd:ied,jsd:jed,nk))      ; mixo(1)%jprod_n_hetero_spec       = 0.0
     allocate(mixo(1)%liebig_lim(isd:ied,jsd:jed,nk))   ; mixo(1)%liebig_lim     = 0.0
     allocate(mixo(1)%mu(isd:ied,jsd:jed,nk))           ; mixo(1)%mu             = 0.0
     allocate(mixo(1)%po4lim(isd:ied,jsd:jed,nk))       ; mixo(1)%po4lim         = 0.0
@@ -14056,6 +14105,7 @@ write (stdlogunit, generic_COBALT_nml)
     allocate(cobalt%jnlg(isd:ied, jsd:jed, 1:nk))         ; cobalt%jnlg=0.0
     allocate(cobalt%jnmx(isd:ied, jsd:jed, 1:nk))         ; cobalt%jnmx=0.0
     allocate(cobalt%jpsi_nmx(isd:ied, jsd:jed, 1:nk))     ; cobalt%jpsi_nmx=0.0
+    allocate(cobalt%jpsi_mx(isd:ied, jsd:jed, 1:nk))     ; cobalt%jpsi_mx=0.0
     allocate(cobalt%jnsmz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnsmz=0.0
     allocate(cobalt%jnmdz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnmdz=0.0
     allocate(cobalt%jnlgz(isd:ied, jsd:jed, 1:nk))        ; cobalt%jnlgz=0.0
@@ -14497,7 +14547,9 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(mixo(1)%juptake_no3)
     deallocate(mixo(1)%juptake_po4)
     deallocate(mixo(1)%jprod_n_auto)
+    deallocate(mixo(1)%jprod_n_auto_spec)
     deallocate(mixo(1)%jprod_n_hetero)
+    deallocate(mixo(1)%jprod_n_hetero_spec)
     deallocate(mixo(1)%liebig_lim)
     deallocate(mixo(1)%mu)
     deallocate(mixo(1)%po4lim)
@@ -14625,7 +14677,9 @@ write (stdlogunit, generic_COBALT_nml)
     deallocate(cobalt%jnbact)  
     deallocate(cobalt%jndi)  
     deallocate(cobalt%jnsm)    
-    deallocate(cobalt%jnmx)
+    deallocate(cobalt%jnmx)    
+    deallocate(cobalt%jpsi_nmx)    
+    deallocate(cobalt%jpsi_mx)
     deallocate(cobalt%jnlg)  
     deallocate(cobalt%jnsmz)  
     deallocate(cobalt%jnmdz)  
