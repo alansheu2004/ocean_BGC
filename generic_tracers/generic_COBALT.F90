@@ -6201,7 +6201,7 @@ write (stdlogunit, generic_COBALT_nml)
     call g_tracer_add_param('mswitch_lgz',zoo(3)%mswitch, 2.0)          ! dimensionless
     call g_tracer_add_param('mswitch_mx',mixo(1)%mswitch, 2.0)          ! dimensionless
     ! innate prey availability for mixotrophs
-    call g_tracer_add_param('mx_ipa_smp',mixo(1)%ipa_smp, 0.5)    ! dimensionless
+    call g_tracer_add_param('mx_ipa_smp',mixo(1)%ipa_smp, 1.0)    ! dimensionless
     call g_tracer_add_param('mx_ipa_lgp',mixo(1)%ipa_lgp, 0.0)          ! dimensionless
     call g_tracer_add_param('mx_ipa_diaz',mixo(1)%ipa_diaz,0.0)         ! dimensionless
     call g_tracer_add_param('mx_ipa_mx',mixo(1)%ipa_mx,0.0)         ! dimensionless
@@ -6425,8 +6425,8 @@ write (stdlogunit, generic_COBALT_nml)
     ! Mixotrophy Parameters
     !-----------------------------------------------------------------------
     !
-    call g_tracer_add_param('eta', mixo(1)%eta, 1.0)                       ! none
-    call g_tracer_add_param('iota', mixo(1)%iota, 0.01)                     ! s-1
+    call g_tracer_add_param('eta', mixo(1)%eta, 0.9)                       ! none
+    call g_tracer_add_param('iota', mixo(1)%iota, 0.003)                     ! s-1
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
@@ -9283,7 +9283,9 @@ write (stdlogunit, generic_COBALT_nml)
        ! dpsi_n/dt = (psi + dpsi/dt * dt) * (dn/dt) = (psi * dn/dt) + (dpsi/dt * dt * dn/dt)
        ! psi_n = psi * n
        ! dpsi_n/dt = d/dt (psi*n) = (dpsi/dt * n) + (psi * dn/dt)
+
        cobalt%jpsi_nmx(i,j,k) = mixo(1)%psi(i,j,k)*cobalt%jnmx(i,j,k) + cobalt%jpsi_mx(i,j,k)*mixo(1)%f_n(i,j,k)
+       ! cobalt%jpsi_nmx(i,j,k) = cobalt%jnmx(i,j,k) * (mixo(1)%psi(i,j,k) + cobalt%jpsi_mx(i,j,k)*dt*grid_tmask(i,j,k))
        cobalt%p_psi_nmx(i,j,k,tau) = cobalt%p_psi_nmx(i,j,k,tau) + cobalt%jpsi_nmx(i,j,k)*dt*grid_tmask(i,j,k)
     enddo; enddo ; enddo  !} i,j,k
 !
