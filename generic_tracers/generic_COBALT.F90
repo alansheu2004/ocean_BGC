@@ -515,7 +515,7 @@ module generic_COBALT
           ipa_det,          & ! innate prey availability of detritus
           ipa_bact,         & ! innate prey availability for bacteria
           eta,              & ! mixotrophy inefficiency factor
-          iota                ! rate of change of psi
+          nu                ! rate of change of psi
      real, ALLOCATABLE, dimension(:,:)  :: &
           jprod_n_auto_100, & 
           jprod_n_hetero_100,& 
@@ -2305,14 +2305,6 @@ write (stdlogunit, generic_COBALT_nml)
     ! CAS: loss diagnostics simplified to just N
 
     vardesc_temp = vardesc("jzloss_n_Mx","Mixotroph nitrogen loss to zooplankton layer integral",&
-                           'h','L','s','mol N m-2 s-1','f')
-    mixo(1)%id_jzloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-         init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
-     !
-    !  Register diagnostics for mixotroph loss terms: respiration 
-    !
-     vardesc_temp = vardesc("jzloss_n_Mx","Mixotroph nitrogen loss to zooplankton layer integral",&
                            'h','L','s','mol N m-2 s-1','f')
     mixo(1)%id_jzloss_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -5888,10 +5880,6 @@ write (stdlogunit, generic_COBALT_nml)
 
       ! Dynamic Psi
 
-     vardesc_temp = vardesc("psi_nmx","Mixotroph Autotrophic Biomass",'h','1','s','mol m-3','f')
-     mixo(1)%id_psi_n = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
-          init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
-
      vardesc_temp = vardesc("psi_mx","Mixotroph Preference Parameter",'h','1','s','1','f')
      mixo(1)%id_psi = register_diag_field(package_name, vardesc_temp%name, axes(1:3),&
           init_time, vardesc_temp%longname,vardesc_temp%units, missing_value = missing_value1)
@@ -6447,7 +6435,7 @@ write (stdlogunit, generic_COBALT_nml)
     !-----------------------------------------------------------------------
     !
     call g_tracer_add_param('eta', mixo(1)%eta, 0.9)                       ! none
-    call g_tracer_add_param('iota', mixo(1)%iota, 1.0 / sperd)                     ! s-1
+    call g_tracer_add_param('nu', mixo(1)%nu, 1.0 / sperd)                     ! s-1
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
@@ -9303,9 +9291,9 @@ write (stdlogunit, generic_COBALT_nml)
        ! Mixotroph Dynamic Psi
        !
        if (mixo(1)%jprod_n_auto_spec(i,j,k) > mixo(1)%jprod_n_hetero_spec(i,j,k)) then
-          cobalt%jpsi_mx(i,j,k) = mixo(1)%iota * (1.0 - mixo(1)%psi(i,j,k))
+          cobalt%jpsi_mx(i,j,k) = mixo(1)%nu * (1.0 - mixo(1)%psi(i,j,k))
        else if (mixo(1)%jprod_n_auto_spec(i,j,k) < mixo(1)%jprod_n_hetero_spec(i,j,k)) then
-          cobalt%jpsi_mx(i,j,k) = -mixo(1)%iota * mixo(1)%psi(i,j,k)
+          cobalt%jpsi_mx(i,j,k) = -mixo(1)%nu * mixo(1)%psi(i,j,k)
        else
           cobalt%jpsi_mx(i,j,k) = 0.0
        endif
@@ -11117,34 +11105,34 @@ write (stdlogunit, generic_COBALT_nml)
         used = g_send_data(cobalt%id_jprod_ndet, cobalt%jprod_ndet*rho_dzt,           &
         model_time, rmask = grid_tmask,&
         is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_pdet .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_pdet, cobalt%jprod_pdet*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_srdon .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_srdon, cobalt%jprod_srdon*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_sldon .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_sldon, cobalt%jprod_sldon*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_ldon .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_ldon, cobalt%jprod_ldon*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_srdop .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_srdop, cobalt%jprod_srdop*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_sldop .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_sldop, cobalt%jprod_sldop*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
-    !if (cobalt%id_jprod_ldop .gt. 0)          &
-    !    used = g_send_data(cobalt%id_jprod_ldop, cobalt%jprod_ldop*rho_dzt,           &
-    !    model_time, rmask = grid_tmask,&
-    !    is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_pdet .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_pdet, cobalt%jprod_pdet*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_srdon .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_srdon, cobalt%jprod_srdon*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_sldon .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_sldon, cobalt%jprod_sldon*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_ldon .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_ldon, cobalt%jprod_ldon*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_srdop .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_srdop, cobalt%jprod_srdop*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_sldop .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_sldop, cobalt%jprod_sldop*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
+    if (cobalt%id_jprod_ldop .gt. 0)          &
+       used = g_send_data(cobalt%id_jprod_ldop, cobalt%jprod_ldop*rho_dzt,           &
+       model_time, rmask = grid_tmask,&
+       is_in=isc, js_in=jsc, ks_in=1,ie_in=iec, je_in=jec, ke_in=nk)
     if (cobalt%id_jprod_nh4 .gt. 0)          &
         used = g_send_data(cobalt%id_jprod_nh4, cobalt%jprod_nh4*rho_dzt,           &
         model_time, rmask = grid_tmask,&
