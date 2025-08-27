@@ -515,7 +515,8 @@ module generic_COBALT
           ipa_det,          & ! innate prey availability of detritus
           ipa_bact,         & ! innate prey availability for bacteria
           eta,              & ! mixotrophy inefficiency factor
-          nu                ! rate of change of psi
+          nu,               & ! rate of change of psi
+          psi_static          ! static value of psi (only used if nu = 0)
      real, ALLOCATABLE, dimension(:,:)  :: &
           jprod_n_auto_100, & 
           jprod_n_hetero_100,& 
@@ -6435,7 +6436,8 @@ write (stdlogunit, generic_COBALT_nml)
     !-----------------------------------------------------------------------
     !
     call g_tracer_add_param('eta', mixo(1)%eta, 0.9)                       ! none
-    call g_tracer_add_param('nu', mixo(1)%nu, 1.0 / sperd)                     ! s-1
+    call g_tracer_add_param('nu', mixo(1)%nu, 0.0)                     ! s-1
+    call g_tracer_add_param('psi_static', mixo(1)%psi_static, 0.1)                       ! none
     !
     !-----------------------------------------------------------------------
     ! Miscellaneous
@@ -7751,7 +7753,11 @@ write (stdlogunit, generic_COBALT_nml)
 
        enddo !} n
 
-       mixo(1)%psi(i,j,k) = mixo(1)%psi_n(i,j,k) / mixo(1)%f_n(i,j,k)
+       if (mixo(1)%nu == 0.0) then
+          mixo(1)%psi(i,j,k) = mixo(1)%psi_static
+       else
+          mixo(1)%psi(i,j,k) = mixo(1)%psi_n(i,j,k) / mixo(1)%f_n(i,j,k)
+       end if
 
        ! Mixotroph Instantaneous Growth Rate
        P_C_m = max(mixo(1)%eta * mixo(1)%liebig_lim(i,j,k)*mixo(1)%P_C_max*cobalt%expkT(i,j,k),epsln)
@@ -8263,6 +8269,11 @@ write (stdlogunit, generic_COBALT_nml)
        !
 
        m = 4 
+       if (mixo(1)%nu == 0.0) then
+          mixo(1)%psi(i,j,k) = mixo(1)%psi_static
+       else
+          mixo(1)%psi(i,j,k) = mixo(1)%psi_n(i,j,k) / mixo(1)%f_n(i,j,k)
+       end if
        sw_fac_denom = (ipa_matrix(m,3)*prey_vec(3))**mixo(1)%nswitch + &
                       (ipa_matrix(m,5)*prey_vec(5))**mixo(1)%nswitch
        pa_matrix(m,3) = ipa_matrix(m,3)* &
@@ -9290,6 +9301,7 @@ write (stdlogunit, generic_COBALT_nml)
        !
        ! Mixotroph Dynamic Psi
        !
+       
        if (mixo(1)%jprod_n_auto_spec(i,j,k) > mixo(1)%jprod_n_hetero_spec(i,j,k)) then
           cobalt%jpsi_mx(i,j,k) = mixo(1)%nu * (1.0 - mixo(1)%psi(i,j,k))
        else if (mixo(1)%jprod_n_auto_spec(i,j,k) < mixo(1)%jprod_n_hetero_spec(i,j,k)) then
